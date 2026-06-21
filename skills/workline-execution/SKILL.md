@@ -1,7 +1,7 @@
 ---
 name: workline-execution
 description: "Execute workline methodology on real projects — analysis, SDD, implementation, review, verification"
-version: 1.4.0
+version: 1.4.1
 tags: [workline, sdd, agent-pipeline, et6, unity]
 platforms: [windows, linux, macos]
 triggers:
@@ -224,6 +224,8 @@ Common ET6 API traps:
 - `PlayerLoginInfo.XxxComponent` wraps fields, NOT direct properties
 - `ErrorCode` enum is limited — only `ERR_SystemError` and `ERR_GoodsNotEnough`
 
+**For Unity projects (non-ET6)**: Before first compile, check `Packages/manifest.json` for `com.unity.ugui`. If missing and the code uses `UnityEngine.UI` (Text, Image, Button, Canvas), add `"com.unity.ugui": "1.0.0"` to the dependencies. Skip check for ET6/HybridCLR projects — they use their own UI framework (DlgSystem, not UGUI).
+
 ### Phase 6: HybridCLR DLL Cache Fix
 
 After source changes:
@@ -273,6 +275,14 @@ delegate_task(
     ## 无关文件修改检查
 
     - [ ] Agent 是否只修改了 SDD 允许范围内的文件？
+
+    ## 报告完整性检查（审查前必须确认）
+
+    - [ ] REVIEW.md 存在
+    - [ ] ChangedFiles.md 存在
+    - [ ] TestReport.md 存在
+    - [ ] RiskReport.md 存在
+    - [ ] 如果缺任何一份 → NOT READY，先补全再审查
     - [ ] 是否存在顺手格式化、顺手重构、顺手优化？
     - [ ] 是否修改了与当前任务无关的模块？
     - [ ] 是否修改了公共接口、协议、配置、资源路径？
