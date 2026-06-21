@@ -47,3 +47,14 @@ git checkout -b exp/delegate-enforcement
 # 通过 → git checkout main && git merge exp/delegate-enforcement && git tag
 # 失败 → git branch -D exp/delegate-enforcement
 ```
+
+## 同步到运行时目录
+
+改完 skill 后，必须同步到 `~/.hermes/skills/` 才能被 Hermes 加载：
+
+```bash
+# 从 harness repo 同步到运行时目录
+cp -r skills/<name> ~/AppData/Local/hermes/skills/<name>/
+```
+
+**如果忘记同步**：下次任务加载旧版本 skill，管线退化到上一个 tag。commit 后立即 cp。
