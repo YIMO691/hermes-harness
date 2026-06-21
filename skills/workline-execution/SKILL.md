@@ -1,7 +1,7 @@
 ---
 name: workline-execution
 description: "Execute workline methodology on real projects — analysis, SDD, implementation, review, verification"
-version: 1.2.0
+version: 1.3.0
 tags: [workline, sdd, agent-pipeline, et6, unity]
 platforms: [windows, linux, macos]
 triggers:
@@ -24,6 +24,20 @@ Execute the workline methodology for real projects: understanding requirements �
 - Any task where you must understand a framework's pattern and write matching code
 - Projects where the existing code is a previous attempt that needs rewriting
 
+## Skill Dependencies (MUST LOAD FIRST)
+
+Before executing ANY phase, load these skills. The workline's agent contracts depend on them:
+
+```python
+skill_view(name='codex')                        # Codex invocation patterns + image analysis
+skill_view(name='subagent-driven-development')   # delegate_task patterns + 2-stage review
+skill_view(name='claude-code')                   # Claude Code review invocation
+```
+
+**Why**: Without these loaded, Hermes defaults to writing code itself — see retrospective `2026-06-21-ET6.md §P0`. The constraint "Hermes does NOT write code" is in this skill, but the *how* (delegate_task patterns, codex exec flags, Claude Code prompts) lives in the dependency skills. Load them or the constraint is toothless.
+
+If a dependency skill is unavailable: mark `[FALLBACK]` and Hermes handles that phase directly. But loading must be attempted first.
+
 ## Core Principles
 
 1. **Compile before review.** API name mismatches are systematic. The compiler is the first reviewer.
@@ -32,6 +46,42 @@ Execute the workline methodology for real projects: understanding requirements �
 4. **Git is the harness backbone.** Every coding session starts with `git init` (if not already a repo) and a feature branch. Every atomic change is committed. Claude Code reviews run on `git diff`, not full files. The `.bak` file pattern is a symptom of missing git — if you see `.bak` files, `git init` immediately.
 
 ## Workline Phases
+
+### Phase 0: GATE 0 — Environment Readiness Check
+
+**MANDATORY.** Before any document reading or analysis, verify the environment can actually execute the workline.
+
+Checklist — every item must be confirmed before proceeding:
+
+```yaml
+工程可达:
+  - 确认项目根目录绝对路径
+  - cd 到项目根目录 && pwd 验证
+
+编译工具:
+  - dotnet --version 确认可用
+  - 确认 Server.sln 或等价入口文件存在
+
+服务端:
+  - 确认服务端启动脚本存在
+  - 确认服务端口配置（默认 20001）
+
+GM 权限:
+  - 确认 GM 账号可用（数值面板 → 用户是否是 = 1）
+
+Agent 可用性:
+  - 确认 codex CLI 可用（codex --version）
+  - 确认 delegate_task 工具可用
+  - 确认 Claude Code / gh CLI 可用（claude --version 或 gh --version）
+
+项目状态:
+  - git status 确认工作区（如果是 git repo）
+  - 如果存在 .bak 文件 → git init 立即执行
+```
+
+Output: `tasks/doing/ENV_CHECK.md` with each item marked ✅ or ❌.
+
+**Items marked ❌ = blocking.** Do not proceed to Phase 1 until resolved or explicitly waived by the user.
 
 ### Phase 1: Full Document Absorption
 
@@ -169,14 +219,68 @@ Then in Unity Editor: **Tools → Build → BuildCodeDebug**
 
 **This step is NOT optional. Run even after 0-error builds.**
 
-Use Claude Code (`claude -p`) to review the implementation against reference modules. Check:
+Use Claude Code to review the implementation against reference modules. Check:
 - Pattern consistency (does every method follow reference module's IsCan+Do, Handler chain, DlgSystem pattern?)
 - Null safety (every `GetComponent<T>()` checked? every `GetComponentNotNull<T>()` appropriate?)
 - IsCan+Do completeness (every Do method has a corresponding IsCan? every IsCan called before its Do in Handler?)
 - Handler try-catch coverage (every network handler wrapped in try/catch with `reply()` in catch?)
 - API correctness (method names, field names match actual definitions — grep reference code to verify)
 
-Provide Claude Code with: the reference module source files, the newly written files, and the design docs. The prompt should be: "Review these files against the reference module. Flag: pattern deviations, missing null checks, missing IsCan+Do pairs, uncovered error paths."
+#### Claude Code Invocation
+
+If project is in git (Phase 4 Step 0):
+```bash
+git diff feature/<branch> --stat                    # confirm scope first
+git diff feature/<branch> > /tmp/review-diff.patch  # feed diff to Claude
+```
+
+Then delegate via `delegate_task`:
+```python
+delegate_task(
+    goal="Review implementation for pattern consistency, null safety, IsCan+Do completeness, and handler coverage",
+    context="""
+    REVIEW SCOPE: git diff of feature branch (attached)
+    REFERENCE MODULES: [list reference source files]
+    DESIGN DOCS: [list client/server design docs]
+
+    CHECKLIST:
+    - [ ] Every Do method has a corresponding IsCan
+    - [ ] Every Handler calls IsCan before Do
+    - [ ] Every Handler has try/catch with reply() in catch
+    - [ ] Every GetComponent<T>() checked for null (or uses GetComponentNotNull)
+    - [ ] API names match reference module (grep verified)
+    - [ ] No pattern deviations from reference module
+
+    OUTPUT: REVIEW.md in tasks/review/
+    Format:
+    ```markdown
+    # Code Review: <module>
+
+    ## Critical Issues (blocking)
+    - [ ] ...
+
+    ## Warnings (should fix)
+    - [ ] ...
+
+    ## Passed Checks
+    - [x] ...
+
+    ## Verdict: APPROVED / NEEDS_FIX / REJECTED
+    ```
+    """,
+    toolsets=['terminal', 'file']
+)
+```
+
+#### Loop-back Rules
+
+| Verdict | Action |
+|:---|:---|
+| APPROVED | Proceed to Phase 8 |
+| NEEDS_FIX | Fix issues → re-compile (Phase 5) → re-review (Phase 7). Max 3 loops. |
+| REJECTED | Escalate to user. Do not proceed. |
+
+**If delegate_task is unavailable**: Hermes reads the diff, checks against the checklist manually, and produces REVIEW.md. Mark `[FALLBACK: herm-review]` in retrospective.
 
 If Claude Code returns issues, fix them and re-review before proceeding to Phase 8.
 
