@@ -1,7 +1,7 @@
 ---
 name: workline-execution
 description: "Execute workline methodology on real projects — analysis, SDD, implementation, review, verification"
-version: 1.3.0
+version: 1.4.0
 tags: [workline, sdd, agent-pipeline, et6, unity]
 platforms: [windows, linux, macos]
 triggers:
@@ -131,6 +131,25 @@ Structure (see `references/sdd-template.md`):
 
 Key rule: **Task 1 must be the lowest-level dependency** — typically Model layer data definitions that Hotfix code references. If Hotfix code references a Component that doesn't exist, that's Task 1.
 
+The SDD must include a **"非目标 / 本次不做"** section that explicitly scopes what the Agent should NOT touch:
+
+```markdown
+## 非目标 / 本次不做
+
+本次任务明确不处理以下内容：
+
+- 不重构无关模块
+- 不修改未列入任务范围的系统
+- 不顺手优化架构
+- 不引入新的框架或依赖
+- 不修改公共协议、公共接口或全局配置，除非 SDD 明确允许
+- 不处理与当前 Bug / 当前需求无直接关系的问题
+
+如 Agent 认为必须修改以上内容，必须先在 REVIEW.md 中说明原因，并等待人工确认。
+```
+
+Why: Without explicit scope boundaries, coding agents default to "improving" everything they see. The "非目标" section is the contract that limits their reach — and gives the review phase a concrete reference to flag [VIOLATION: scope-creep].
+
 ### Phase 4: Independent Implementation
 
 **CRITICAL — Agent division of labor. Hermes does NOT write code in this phase.**
@@ -251,21 +270,121 @@ delegate_task(
     - [ ] API names match reference module (grep verified)
     - [ ] No pattern deviations from reference module
 
-    OUTPUT: REVIEW.md in tasks/review/
-    Format:
+    ## 无关文件修改检查
+
+    - [ ] Agent 是否只修改了 SDD 允许范围内的文件？
+    - [ ] 是否存在顺手格式化、顺手重构、顺手优化？
+    - [ ] 是否修改了与当前任务无关的模块？
+    - [ ] 是否修改了公共接口、协议、配置、资源路径？
+    - [ ] 是否新增了未声明依赖？
+    - [ ] 是否删除了未声明文件？
+    - [ ] 如果存在范围外修改，是否在 REVIEW.md 和 ChangedFiles.md 中解释？
+
+    处理规则：
+    - 如果 Agent 修改了无关文件 → 不允许直接通过审查
+    - 必须要求 Agent 解释修改原因
+    - 如果修改没有必要 → 要求回滚
+    - 如果修改确实必要 → 必须补充到 SDD 范围说明中
+
+    OUTPUT — produce ALL FOUR files in tasks/review/:
+
+    1. REVIEW.md
     ```markdown
-    # Code Review: <module>
+    # REVIEW.md
 
-    ## Critical Issues (blocking)
-    - [ ] ...
+    ## 审查结论
+    - [ ] 通过
+    - [ ] 需要修复
+    - [ ] 需要人工确认
 
-    ## Warnings (should fix)
-    - [ ] ...
+    ## 本轮任务目标
+    [简述本轮任务要解决的问题]
 
-    ## Passed Checks
-    - [x] ...
+    ## 发现的问题
+    | 编号 | 问题 | 严重程度 | 是否已修复 |
+    |---|---|---|---|
+    | 1 |  | Blocker / Major / Minor | 是 / 否 |
 
-    ## Verdict: APPROVED / NEEDS_FIX / REJECTED
+    ## 修复摘要
+    [简述 Agent 做了哪些修复]
+
+    ## 是否存在越权修改
+    - [ ] 否
+    - [ ] 是，说明如下：
+
+    ## 是否需要人工确认
+    - [ ] 否
+    - [ ] 是，原因：
+    ```
+
+    2. ChangedFiles.md
+    ```markdown
+    # ChangedFiles.md
+
+    ## 修改文件列表
+    | 文件 | 修改类型 | 修改原因 | 是否属于 SDD 范围 |
+    |---|---|---|---|
+    | path/to/file.cs | 新增 / 修改 / 删除 |  | 是 / 否 |
+
+    ## 关键修改说明
+    ### 1. 文件：xxx.cs
+    修改内容：...
+    修改原因：...
+
+    ## 无关文件检查
+    - [ ] 未修改无关文件
+    - [ ] 修改了无关文件，说明如下：
+
+    ## 需要人工重点查看的文件
+    ```
+
+    3. TestReport.md
+    ```markdown
+    # TestReport.md
+
+    ## 测试环境
+    - 项目 / 分支 / 运行方式 / 测试时间
+
+    ## 执行的验证
+    | 验证项 | 结果 | 说明 |
+    |---|---|---|
+    | 编译检查 | 通过 / 失败 / 未执行 |  |
+    | 启动检查 | 通过 / 失败 / 未执行 |  |
+    | 相关功能检查 | 通过 / 失败 / 未执行 |  |
+    | 日志 Error 检查 | 通过 / 失败 / 未执行 |  |
+    | 回归风险检查 | 通过 / 失败 / 未执行 |  |
+
+    ## 失败项
+    | 失败项 | 错误信息 | 处理方式 |
+    |---|---|---|
+
+    ## 未执行项说明
+    [列出为什么某些测试没有执行，禁止伪造测试结果]
+
+    ## 最终测试结论
+    - [ ] 通过
+    - [ ] 未完全通过
+    - [ ] 无法验证，需要人工介入
+    ```
+
+    4. RiskReport.md
+    ```markdown
+    # RiskReport.md
+
+    ## 本轮风险等级
+    - [ ] 低 / [ ] 中 / [ ] 高
+
+    ## 主要风险
+    | 风险 | 影响范围 | 可能后果 | 建议处理 |
+    |---|---|---|---|
+
+    ## 架构风险
+    - 是否修改模块边界 / 引入新依赖 / 影响公共接口 / 影响协议/配置/资源加载
+
+    ## 运行时风险
+    - 是否可能引入空引用 / 影响生命周期 / 影响热更/HybridCLR / 影响性能
+
+    ## 需要人工确认的风险
     ```
     """,
     toolsets=['terminal', 'file']
@@ -287,6 +406,28 @@ If Claude Code returns issues, fix them and re-review before proceeding to Phase
 ### Phase 8: Verification
 
 User does Unity Play + screenshots. Hermes handles file deployment, compilation, and review.
+
+After verification, produce an Obsidian retrospective note. Include:
+
+```markdown
+## 面试表达
+
+本次任务可以这样表达：
+
+> 我在实现 / 修复这个功能时，先通过 SDD 明确了任务范围、非目标和验收标准，避免 AI Agent 越权修改无关模块。
+>
+> 在 Agent 执行后，我不会直接相信它的输出，而是要求它提供 ChangedFiles、TestReport 和 RiskReport，分别说明改了哪些文件、如何验证、还有哪些风险。
+>
+> 对于 Unity / ET6 / HybridCLR 项目，我会特别关注生命周期、热更边界、公共接口、资源路径和运行时日志，避免 AI 只追求"能编译"而忽略客户端工程风险。
+
+## 可复用经验
+
+- 本次遇到的问题：
+- 下次遇到类似问题应优先检查：
+- 可以沉淀为 Harness 规则的内容：
+- 可以加入 SDD 模板的内容：
+- 可以作为面试案例讲述的点：
+```
 
 ## References
 
