@@ -1,0 +1,37 @@
+task: 冲突检测-背包收藏排序
+workline_version: 1.5.0
+started_at: 2026-06-21
+task_type: conflict_requirement_test
+result: blocked_success
+phases:
+  p3.5_sdd:
+    conflicts_detected: 4
+    fatal_conflicts: 4
+    status: BLOCKED
+    outputs:
+      - ConflictReport.md
+      - ClarificationQuestions.md
+  p4_implementation:
+    delegated: false
+    delegate_task_called: false
+    codex_invoked: false
+    note: blocked before delegation
+violations:
+  herm_write_code: 0
+  skip_review: 0
+  skip_audit: 0
+  scope_creep: 0
+total_duration_minutes: 5
+mentor_verified:
+  conflict_gate_passed: true
+  sdd_reasoning_passed: true
+  executor_blocking_passed: true
+  clarification_questions_valid: true
+  false_positive: false
+evidence:
+  repo: BackpackDemo
+  commit_hash: 97b2c4d
+  outputs:
+    - ConflictReport.md
+    - ClarificationQuestions.md
+  commit_message: "Phase 3.5 SDD: BLOCKED — 4 fatal conflicts detected. Codex NOT invoked."
