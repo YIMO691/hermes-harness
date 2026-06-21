@@ -1,0 +1,28 @@
+task: BackpackDemo
+workline_version: 1.4.0
+started_at: 2026-06-21
+phases:
+  p0_gate:
+    passed: true
+  p4_implementation:
+    delegated: true
+    subagent_calls: 2
+    subagent_interruptions: 1
+  p5_compile:
+    initial_errors: 12
+    fix_loops: 1
+  p7_review:
+    initial_verdict: CONDITIONAL
+    reports_missing: 2
+    rework_loops: 1
+    bugs_found_by_review: 0
+    final_verdict: APPROVED
+  p8_verify:
+    user_verified: true
+    bugs_found_by_user: 0
+violations:
+  herm_write_code: 0
+  skip_review: 0
+  skip_audit: 0
+  scope_creep: 0
+total_duration_minutes: 35
