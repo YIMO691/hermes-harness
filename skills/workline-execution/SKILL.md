@@ -1,7 +1,7 @@
 ---
 name: workline-execution
 description: "Execute workline methodology on real projects — analysis, SDD, implementation, review, verification"
-version: 1.5.0
+version: 1.6.0
 tags: [workline, sdd, agent-pipeline, et6, unity]
 platforms: [windows, linux, macos]
 triggers:
@@ -149,6 +149,53 @@ The SDD must include a **"非目标 / 本次不做"** section that explicitly sc
 ```
 
 Why: Without explicit scope boundaries, coding agents default to "improving" everything they see. The "非目标" section is the contract that limits their reach — and gives the review phase a concrete reference to flag [VIOLATION: scope-creep].
+
+### Phase 3.5b: Conflict Gate — Requirement Feasibility Check
+
+**BEFORE delegating to Codex**, check the SDD for internal contradictions. This is the Harness' "demand gatekeeper" — it prevents impossible tasks from reaching the execution layer.
+
+Checklist — every item must be assessed:
+
+```yaml
+1. 功能目标之间是否冲突:
+    例: "收藏状态持久化" vs "关闭后不保存"
+
+2. 功能目标与非目标是否冲突:
+    例: "点击收藏按钮" vs "不修改 UI Prefab / 不新增 UI 控件"
+
+3. 验收标准与约束是否冲突:
+    例: "输出 SDD/REVIEW 等报告文件" vs "不新增任何文件"
+
+4. 持久化需求是否有合法存储位置:
+    检查: ItemData字段 / 新数据结构 / PlayerPrefs / 文件存储 / 后端
+    如果全部被禁 → 持久化不可执行
+
+5. UI 交互需求是否有合法 UI 修改权限:
+    检查: Prefab修改 / 动态创建控件 / 复用现有元素
+    如果全部被禁 → UI 需求不可执行
+
+6. 排序/筛选/状态需求是否允许修改对应逻辑:
+    检查: RefreshList / OnFilterClicked / 排序方法
+    如果被禁 → 排序需求不可执行
+
+7. 输出文件要求是否与 "不新增任何文件" 冲突:
+    约束是 "任何文件" 还是 "业务代码文件"？
+    如果是前者 → 报告输出冲突
+```
+
+If ANY fatal conflict is found:
+
+| Action | Detail |
+|:---|:---|
+| Status | Mark as **BLOCKED** |
+| delegate_task | **DO NOT invoke** Codex or Claude Code |
+| Output | `ConflictReport.md` — which requirements conflict, why they cannot coexist |
+| Output | `ClarificationQuestions.md` — what the Mentor must answer before unblocking |
+| Next | Wait for Mentor response. Do NOT proceed to Phase 4. |
+
+If no conflicts: proceed to Phase 4 normally.
+
+**Why**: A workline that blindly executes any task is a script. A workline that detects impossible demands and blocks execution is an engineering system. This gate was validated on 2026-06-21 with the backpack-favorite-sort conflict test: 4 fatal conflicts detected, Codex NEVER invoked.
 
 ### Phase 4: Independent Implementation
 
@@ -472,6 +519,16 @@ violations:
   skip_audit: 0
   scope_creep: 0
 total_duration_minutes: 0
+
+mentor_verified:
+  sdd_review_passed: false
+  phase8_user_check_passed: false
+  clarification_valid: false
+
+evidence:
+  commit_hash: ""
+  outputs: []
+  screenshots: []
 ```
 
 This file enables Level 2 — metric-driven evolution. After 3+ tasks with metrics, Hermes can:
