@@ -32,27 +32,50 @@ hermes-harness/
 
 | 版本 | 状态 | 验证任务 | 核心改进 |
 |:---|:--:|:---|:---|
-| v1.4 | stable | 背包筛选 UI（全部通过 ✅） | SDD 非目标 + 4 份结构化报告 + 越权检查 + 面试复盘 |
-| v1.3 | stable | ET6 新鲜副本（发现 4 Bug ✅） | 依赖自动加载 + GATE 0 准入 + 审查模板 + 回路机制 |
-| v1.2 | stable | ET6 测试题（27/27 ✅） | Git 集成 + Agent 契约 + 代码审计 + 审查 GATE + GM 测试 |
+| v1.6 | stable | 背包收藏冲突 + frontmatter baseline | Conflict Gate + 三段式 metrics + 回归套件 |
+| v1.5 | stable | GC修复 + obsidian-norm (3 tasks) | metrics.yaml + Level 2 指标分析 |
+| v1.4 | stable | 背包筛选 UI（全部通过 ✅） | SDD 非目标 + 4 份结构化报告 + 越权检查 |
+| v1.3 | stable | ET6 新鲜副本（发现 4 Bug ✅） | 依赖自动加载 + GATE 0 准入 + 回路机制 |
+| v1.2 | stable | ET6 测试题（27/27 ✅） | Git 集成 + Agent 契约 + 代码审计 + 审查 GATE |
+
+## 回归套件
+
+| # | 用例 | 结果 | Loop |
+|:--|:---|:--:|:--:|
+| 01 | Unity 新建功能 | ✅ | — |
+| 02 | Unity GC 修复 | ✅ | — |
+| 03 | Python 修复 | ✅ | — |
+| 04 | 冲突需求拦截 | ✅ BLOCKED | — |
+| 05 | CONDITIONAL 回路压测 | ⚠️ 2次未触发 | Agent 对 Python 太强 |
 
 ## 当前能力矩阵
 
-| 能力 | v1.2 | v1.3 | v1.4 |
-|:---|:--:|:--:|:--:|
-| Agent 分工（Hermes 不写 .cs） | ✅ | ✅ | ✅ |
-| 审查 GATE 不可跳过 | ✅ | ✅ | ✅ |
-| 回路机制（CONDITIONAL→修复→APPROVED） | — | ✅ | ✅ |
-| Git 集成 | ✅ | ✅ | ✅ |
-| 代码审计 + 跳过编码 | ✅ | ✅ | ✅ |
-| 依赖自动加载 | — | ✅ | ✅ |
-| GATE 0 准入检查 | — | ✅ | ✅ |
-| SDD 非目标约束 | — | — | ✅ |
-| 结构化审查报告（4 份） | — | — | ✅ |
-| 越权修改检查 | — | — | ✅ |
-| 面试表达复盘 | — | — | ✅ |
-| 0 Hermes .cs 写入 | ❌ | ✅ | ✅ |
-| 0 GATE 违规 | ❌ | ✅ | ✅ |
+| 能力 | v1.2 | v1.3 | v1.4 | v1.5 | v1.6 |
+|:---|:--:|:--:|:--:|:--:|:--:|
+| Agent 分工 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 审查 GATE | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 回路机制 | — | ✅ | ✅ | ✅ | ✅ |
+| Git 集成 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 代码审计 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| SDD 非目标 | — | — | ✅ | ✅ | ✅ |
+| 4 份结构化报告 | — | — | ✅ | ✅ | ✅ |
+| 越权检查 | — | — | ✅ | ✅ | ✅ |
+| Metrics 驱动 | — | — | — | ✅ | ✅ |
+| Conflict Gate | — | — | — | — | ✅ |
+| 三段式 metrics | — | — | — | — | ✅ |
+| 回归套件 | — | — | — | — | ✅ |
+
+## 8 份 metrics
+
+```
+ET6-v3          → CONDITIONAL→APPROVED, 4 bugs found
+BackpackDemo    → COMPILE→FIX→APPROVED
+GC-fix          → APPROVED, 0 scope creep
+obsidian-norm   → APPROVED, 21 tests, 0 deps
+conflict-test   → BLOCKED, 4 fatal conflicts
+frontmatter-bl  → baseline_pass (36/36)
+field-order     → baseline_pass (42/42)
+```
 
 ## 两条 Git 铁律
 

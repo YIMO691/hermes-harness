@@ -1,0 +1,32 @@
+task: field-order-regression-repair
+workline_version: 1.6.0
+started_at: 2026-06-21
+task_type: regression_repair
+result: baseline_pass
+phases:
+  p3.5_sdd:
+    status: completed
+  p4_implementation:
+    delegated: true
+    lines_changed: 2
+    pytest_total: 42
+    pytest_passed: 42
+    old_tests_preserved: true
+  p7_review:
+    verdict: APPROVED
+    conditional_triggered: false
+    note: Agent too conservative — found existing sort infrastructure, minimal change
+violations:
+  herm_write_code: 0
+  skip_review: 0
+  scope_creep: 0
+mentor_verified:
+  old_36_tests_preserved: true
+  new_tests_valid: true
+  conditional_loop_observed: false
+  note: second attempt — Agent still too strong for Python tasks. Try Unity for next attempt.
+evidence:
+  repo: obsidian-normalizer
+  branch: v1.7-conditional-stress → master
+  pytest: 42/42
+  files_changed: 1 (+2 lines)
