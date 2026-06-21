@@ -44,11 +44,18 @@
 
 | 版本 | 断裂点 | 加的约束 |
 |:---|:---|:---|
-| v1→v2 | Hermes 越权写代码 | 编码阶段 Hermes 禁止写 .cs |
-| v1→v2 | Claude 审查被跳过 | 编译后强制审查 GATE |
-| v1→v2 | 代码审计缺失 | Phase 1.5 强制 find+读已有代码 |
-| v1→v2 | GM 知识每次重摸索 | et6-gm-testing skill |
-| v1→v2 | 没有 git | skills/ git init |
+| v1.3 | Hermes 越权写代码 | 编码阶段 Hermes 禁止写 .cs |
+| v1.3 | Claude 审查被跳过 | 编译后强制审查 GATE |
+| v1.3 | 代码审计缺失 | Phase 1.5 强制 find+读已有代码 |
+| v1.3 | GM 知识每次重摸索 | et6-gm-testing skill + references |
+| v1.3 | 没有 git | skills/ git init |
+| v1.3 | 依赖 skill 未加载 | Phase 0a 自动加载 codex/subagent/claude |
+| v1.3 | 环境未就绪就开干 | Phase 0b GATE 0 准入检查 |
+| v1.4 | SDD 无作用域边界 | SDD 模板加「非目标」段 |
+| v1.4 | 审查只有结论无证据 | Phase 7 输出升级为 4 份结构化报告 |
+| v1.4 | Agent 可能越权改无关文件 | Phase 7 checklist 加「无关文件修改检查」 |
+| v1.4 | 复盘无面试表达 | Phase 8 加「面试表达」模板 |
+| v1.4 | Unity 新建项目缺 UGUI 包 | Phase 5 待加 manifest 检查 |
 
 ### Agent 能力退化链
 
@@ -74,6 +81,7 @@ git commit -m "patch: <skill> - <原因>"
 
 | tag | 含义 |
 |:---|:---|
-| `v1.0-stable` | 骨架可用，通过 ET6 全量验证 |
-| `v2.0-stable` | Git 集成 + 硬约束 + 审查节点 |
+| `v1.4-stable` | SDD 非目标 + 4 份结构化报告 + 越权检查 + 面试复盘 |
+| `v1.3-stable` | 依赖加载 + GATE 0 + 审查模板 + 回路机制 |
+| `v1.2-stable` | Git 集成 + Agent 契约 + 代码审计 + 审查 GATE |
 | `exp/*` | 实验分支，未验证 |
