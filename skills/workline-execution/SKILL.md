@@ -1,7 +1,7 @@
 ---
 name: workline-execution
 description: "Execute workline methodology on real projects — analysis, SDD, implementation, review, verification"
-version: 1.4.1
+version: 1.5.0
 tags: [workline, sdd, agent-pipeline, et6, unity]
 platforms: [windows, linux, macos]
 triggers:
@@ -438,6 +438,49 @@ After verification, produce an Obsidian retrospective note. Include:
 - 可以加入 SDD 模板的内容：
 - 可以作为面试案例讲述的点：
 ```
+
+### 8b. 产出结构化 metrics
+
+After each task completes, produce `retrospectives/<task-id>-metrics.yaml` in the Harness repo:
+
+```yaml
+task: <任务名>
+workline_version: <版本号>
+started_at: <ISO时间>
+phases:
+  p0_gate:
+    passed: true
+  p4_implementation:
+    delegated: true
+    subagent_calls: 0
+    subagent_interruptions: 0
+  p5_compile:
+    initial_errors: 0
+    fix_loops: 0
+  p7_review:
+    initial_verdict: APPROVED
+    reports_missing: 0
+    rework_loops: 0
+    bugs_found_by_review: 0
+    final_verdict: APPROVED
+  p8_verify:
+    user_verified: true
+    bugs_found_by_user: 0
+violations:
+  herm_write_code: 0
+  skip_review: 0
+  skip_audit: 0
+  scope_creep: 0
+total_duration_minutes: 0
+```
+
+This file enables Level 2 — metric-driven evolution. After 3+ tasks with metrics, Hermes can:
+- Compare compile_errors trends (is Phase 5 getting better?)
+- Detect if violations are recurring (same violation → escalate constraint)
+- Identify slow phases (optimize the bottleneck)
+- Decide which GATEs are mature enough to downgrade to auto-check
+
+The metrics file goes alongside the markdown retrospective. Both are committed to the Harness repo.
 
 ## References
 
