@@ -59,22 +59,17 @@ v3.0  Multi-Agent（等前面稳了再说）
 3. 实验走 branch — 改崩了 `git revert`
 4. 不追 CONDITIONAL — 等真实任务自然失败
 
-## 仓库
+## 仓库生态
 
 ```
-hermes-harness      ← 管线本身（skill + metrics + 回归套件 + 脚本）
-BackpackDemo        ← Unity 验证场
-obsidian-normalizer ← 非 Unity 验证场
+hermes-harness                ← 管线本体（skill + metrics + 回归套件 + snippets）
+  ├── BackpackDemo            ← Unity 验证场
+  ├── obsidian-normalizer     ← Python 验证场
+  ├── unity-verification-projects ← 10 个历史 Unity 项目（Private）
+  ├── unity-learning-lab      ← 6 个学习实验（公开作品集）
+  └── unity-code-review-agent ← C# 静态审查工具
 ```
 
 ## 仓库沿革
 
-本仓库取代了先前两个空壳仓库，它们只存在于概念阶段，从未有实际内容：
-
-| 仓库 | 创建 | 内容 | 命运 |
-|:---|:---|:---|:---|
-| `unity-agent-pipeline-template` | 2026-06-20 | 0 文件（模板概念） | 已删除 |
-| `unity-client-dev-harness` | 2026-06-19 | 0 文件（原型概念，描述"10-Gate AI 管线"） | 已删除 |
-| `hermes-harness` | 2026-06-21 | skill + metrics + 回归套件 + 脚本 | 当前 |
-
-进化路径：模板设想 → 原型命名 → 实际落地。前两步从未越过概念阶段，`hermes-harness` 是唯一的实际产物。
+本仓库取代了先前两个空壳仓库（`unity-agent-pipeline-template` / `unity-client-dev-harness`），并吸收了 `learning-backup` 中的 snippets 和 Unity 项目。
