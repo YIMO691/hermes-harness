@@ -1,83 +1,68 @@
 # Hermes Harness
 
-> Hermes Agent 工作线进化仓库。管线本身的代码，比管线生产的代码更重要。
+> Personal Agent Engineering Workline — SDD-driven, Harness-constrained, Loop-ready.
 
-## 是什么
-
-这不是一个项目。这是**生产项目的生产线**。
+## 版本路线
 
 ```
-hermes-harness/
-├── skills/           ← 管线 Skill（每次任务加载，约束 Agent 行为）
-├── retrospectives/   ← 每次任务复盘（断裂点 → Skill 改进）
-└── tags/             ← 稳定版本标记（哪个版本通过了什么验证）
+v0.0  Prompt 玩具
+  ↓
+v1.0  SOP 流程
+  ↓
+v1.3  Workline 基础版（Agent 分工 + GATE + Review + CONDITIONAL 雏形）
+  ↓
+v1.5  结构化 Harness（SDD 非目标 + 4 份报告 + 越权检查 + Metrics 驱动）
+  ↓
+v1.6  Stable Harness ✅ 当前版本
+  │    Conflict Gate + 三段式 metrics + Regression suite
+  │    已验证：Unity 新建/修复、Python 修复、冲突拦截
+  │    待补：CONDITIONAL 多轮证据
+  ↓
+v1.7  Real-Use  ← 当前分支
+  │    不追 CONDITIONAL，开始做真实任务。让它自然失败。
+  ↓
+v1.9  Sensor Automation（自动检查脚本）
+  ↓
+v2.0  Loop Engineering 稳定版（APPROVED/BLOCKED/CONDITIONAL 三种状态全验证）
+  ↓
+v2.2  Unity 专用规则
+  ↓
+v3.0  Multi-Agent（等前面稳了再说）
 ```
 
-## 怎么工作
+## 当前状态
 
-```
-┌─────────────────────────────────────────────┐
-│  每次任务                                    │
-│  1. 加载 skill/ 中的约束                     │
-│  2. 按 workline 阶段执行                     │
-│  3. 任务完成后 → 复盘 → retrospectives/      │
-│  4. 复盘发现断裂 → patch skill               │
-│  5. git commit → git tag 稳定版本            │
-│                                              │
-│  下次任务 → 加载更新后的 skill → 更强的约束   │
-└─────────────────────────────────────────────┘
-```
-
-## 版本历史
-
-| 版本 | 状态 | 验证任务 | 核心改进 |
-|:---|:--:|:---|:---|
-| v1.6 | stable | 背包收藏冲突 + frontmatter baseline | Conflict Gate + 三段式 metrics + 回归套件 |
-| v1.5 | stable | GC修复 + obsidian-norm (3 tasks) | metrics.yaml + Level 2 指标分析 |
-| v1.4 | stable | 背包筛选 UI（全部通过 ✅） | SDD 非目标 + 4 份结构化报告 + 越权检查 |
-| v1.3 | stable | ET6 新鲜副本（发现 4 Bug ✅） | 依赖自动加载 + GATE 0 准入 + 回路机制 |
-| v1.2 | stable | ET6 测试题（27/27 ✅） | Git 集成 + Agent 契约 + 代码审计 + 审查 GATE |
+| 维度 | 等级 |
+|:---|:--:|
+| SOP | ✅ 5/5 |
+| SDD | ✅ 4.5/5 |
+| Harness | ✅ 3.5/5 — 个人工程级稳定版 |
+| Loop | ⚠️ 2.5/5 — 机制有，多轮证据不足 |
+| Sensor | ⚠️ 3.0/5 — 人工为主 |
+| 通用性 | ✅ 3.5/5 — Unity + Python |
+| 玩具化风险 | 已明显下降 |
 
 ## 回归套件
 
-| # | 用例 | 结果 | Loop |
-|:--|:---|:--:|:--:|
-| 01 | Unity 新建功能 | ✅ | — |
-| 02 | Unity GC 修复 | ✅ | — |
-| 03 | Python 修复 | ✅ | — |
-| 04 | 冲突需求拦截 | ✅ BLOCKED | — |
-| 05 | CONDITIONAL 回路压测 | ⚠️ 2次未触发 | Agent 对 Python 太强 |
+| # | 用例 | 结果 |
+|:--|:---|:--:|
+| 01 | Unity 新建功能 | ✅ |
+| 02 | Unity GC 修复 | ✅ |
+| 03 | Python 修复 | ✅ |
+| 04 | 冲突需求拦截 | ✅ BLOCKED |
+| 05 | CONDITIONAL 回路 | ⚠️ 待补证据 |
 
-## 当前能力矩阵
+## 进化原则
 
-| 能力 | v1.2 | v1.3 | v1.4 | v1.5 | v1.6 |
-|:---|:--:|:--:|:--:|:--:|:--:|
-| Agent 分工 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 审查 GATE | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 回路机制 | — | ✅ | ✅ | ✅ | ✅ |
-| Git 集成 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 代码审计 | ✅ | ✅ | ✅ | ✅ | ✅ |
-| SDD 非目标 | — | — | ✅ | ✅ | ✅ |
-| 4 份结构化报告 | — | — | ✅ | ✅ | ✅ |
-| 越权检查 | — | — | ✅ | ✅ | ✅ |
-| Metrics 驱动 | — | — | — | ✅ | ✅ |
-| Conflict Gate | — | — | — | — | ✅ |
-| 三段式 metrics | — | — | — | — | ✅ |
-| 回归套件 | — | — | — | — | ✅ |
+1. 只加固断裂点 — 约束 = 成本，不在没断的地方加墙
+2. 每改必 commit — 引用复盘证据
+3. 实验走 branch — 改崩了 `git revert`
+4. 不追 CONDITIONAL — 等真实任务自然失败
 
-## 8 份 metrics
+## 仓库
 
 ```
-ET6-v3          → CONDITIONAL→APPROVED, 4 bugs found
-BackpackDemo    → COMPILE→FIX→APPROVED
-GC-fix          → APPROVED, 0 scope creep
-obsidian-norm   → APPROVED, 21 tests, 0 deps
-conflict-test   → BLOCKED, 4 fatal conflicts
-frontmatter-bl  → baseline_pass (36/36)
-field-order     → baseline_pass (42/42)
+hermes-harness      ← 管线本身（skill + metrics + 回归套件 + 脚本）
+BackpackDemo        ← Unity 验证场
+obsidian-normalizer ← 非 Unity 验证场
 ```
-
-## 两条 Git 铁律
-
-1. **Skill 修改必 commit**，commit message 引用复盘证据
-2. **实验走 branch**，验证后 merge → tag，改崩了 `git revert`
