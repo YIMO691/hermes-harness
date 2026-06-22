@@ -1,0 +1,15 @@
+task: result-conflict-test
+mode: full
+result: approved
+build:
+  attempted: true
+  passed: false
+review:
+  attempted: true
+  verdict: APPROVED
+scope:
+  unrelated_files_changed: 0
+  violations: []
+user_verified: false
+regression_required: false
+skill_patch_required: false
