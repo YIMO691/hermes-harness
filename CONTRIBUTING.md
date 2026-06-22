@@ -71,6 +71,7 @@ python tests/harness_check/run_harness_check_cases.py
 
 ## 当前版本
 
+- v1.10 intake trial：requirement intake (intake → breakdown → handoff)
 - v1.9-stable：CI + regression 10/10 + Git workflow execution evidence
 - v1.8-stable：minimal harness checker
 - v1.7-stable：workline core freeze + mode router

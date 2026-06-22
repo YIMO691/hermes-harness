@@ -15,6 +15,7 @@
 v1.7-stable → Workline Core (Mode Router + Conflict Gate)
 v1.8-stable → Harness Checker (full/quick compliance)
 v1.9-stable → CI + Regression 10/10 + Git Workflow Evidence
+v1.10 trial  → Requirement Intake (intake → breakdown → handoff)
 ```
 
 **当前真实等级**：Strong Personal Harness Prototype（接近 Stable Personal Harness，尚未 Production-grade）。
@@ -32,6 +33,7 @@ v1.9-stable → CI + Regression 10/10 + Git Workflow Evidence
 | Regression 10/10 | ✅ |
 | Git Workflow 执行证据 | ✅ |
 | 治理裁决 | ✅ |
+| v1.10 Requirement Intake | ✅ trial (intake → quick implementation verified) |
 | LangGraph / LangChain | ❌ 未引入 |
 | Dashboard / 平台化 | ❌ 不做 |
 
@@ -98,6 +100,8 @@ Task / Bug
 | `docs/WORKLINE_FULL_ENGINEERING_EVALUATION.md` | 全量工程评估 |
 | `docs/evaluations/v1.8-stable/WORKLINE_GOVERNANCE_VERDICT.md` | v1.8 治理裁决 |
 | `docs/evaluations/v1.9-ci-regression-evidence/V1.9_EVIDENCE_REPORT.md` | v1.9 证据报告 |
+| `docs/evaluations/v1.10-requirement-intake/V1.10_REQUIREMENT_INTAKE_READINESS_REVIEW.md` | v1.10 intake 就绪评估 |
+| `tasks/v1.10/` | v1.10 intake 试跑 + quick 实现证据 |
 | `regression/README.md` | 回归套件（10 cases） |
 | `skills/workline-execution/SKILL.md` | 运行时 skill |
 
@@ -109,7 +113,8 @@ Task / Bug
 v1.7-stable — Workline Core                ✅
 v1.8-stable — Harness Checker               ✅
 v1.9-stable — CI + Regression + Git Evidence ✅
-v1.10 candidate — Token Observability / Health Report
+v1.10        — Requirement Intake trial ✅ (intake → quick verified)
+v1.10-stable — Requirement Intake + evidence report (pending)
 v2.0  — 真实断裂后激活第一个 future Gate
 ```
 
@@ -126,4 +131,4 @@ v2.0  — 真实断裂后激活第一个 future Gate
 
 ---
 
-*最后更新：2026-06-22 · v1.9-stable*
+*最后更新：2026-06-22 · v1.9-stable (v1.10 trial)*
