@@ -56,3 +56,98 @@ delegate_task(goal="审查以下代码的 IsCan+Do 完整性...", context="GAP.m
 ## 不可绕过
 
 审查阶段不能跳过。用户说"跳过" → 复盘标记 `[VIOLATION: skip-review]`。
+
+---
+
+## Repository Placement Protocol
+
+> 约束 Agent 在新增文件、目录、工具、任务证据时的放置行为。
+> 规则来源：`docs/WORKLINE_REPOSITORY_STRUCTURE.md`
+
+### 必须先查规则
+
+任何 Agent 在新增文件、目录、工具、测试、任务证据、评估报告、skill、observability 相关内容前，**必须先参考**：
+
+```text
+docs/WORKLINE_REPOSITORY_STRUCTURE.md
+```
+
+### 新增文件必须说明归属
+
+如果新增文件，Agent 必须在任务报告中说明：
+
+```text
+File:
+Target path:
+Directory category:
+Reason:
+Alternatives considered:
+```
+
+### 不确定时必须询问用户
+
+如果出现以下情况，Agent **不得自行决定**，必须询问用户：
+
+- 新增一级目录
+- 新增 skill
+- 新增 `observability/`
+- 新增 `skills/workline-evaluation/`
+- 新增 `skills/workline-observability/`
+- 新增长期工具
+- 移动 existing stable evidence
+- 修改 CI/checker 路径
+- 文件可以放在多个目录且边界不清
+
+询问格式：
+
+```text
+Placement decision required.
+
+Option A:
+- path:
+- reason:
+- risk:
+
+Option B:
+- path:
+- reason:
+- risk:
+
+Recommended:
+- path:
+- reason:
+```
+
+### future-only 目录不得空建
+
+以下目录**只允许在真实实现任务启动后创建**：
+
+```text
+observability/
+skills/workline-evaluation/
+skills/workline-observability/
+```
+
+不得为了"先占位置"空建。空目录 = C 级证据（仅文档化），不得计入工程化。
+
+### 文档化不等于工程化
+
+```
+A/B evidence can count as engineering maturity.
+C-level documentation can only count as design maturity.
+D/E evidence must not be counted as implemented capability.
+```
+
+### 迁移必须单独立项
+
+任何文件移动 / 目录重组都必须：
+
+1. 单独任务
+2. 单独分支
+3. 说明 old path / new path
+4. 更新引用路径
+5. 跑 CI
+6. 生成 migration report
+7. 用户确认后执行
+
+不允许在功能任务中顺手搬目录。

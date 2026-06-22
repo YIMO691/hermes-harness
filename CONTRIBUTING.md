@@ -74,3 +74,19 @@ python tests/harness_check/run_harness_check_cases.py
 - v1.9-stable：CI + regression 10/10 + Git workflow execution evidence
 - v1.8-stable：minimal harness checker
 - v1.7-stable：workline core freeze + mode router
+
+---
+
+## File Placement Rules
+
+> 来源：`docs/WORKLINE_REPOSITORY_STRUCTURE.md`
+
+新增文件前必须先查 `docs/WORKLINE_REPOSITORY_STRUCTURE.md`。
+
+规则：
+
+1. **不确定位置时开 placement decision** — 不得自行猜测
+2. **不允许空建 future-only 目录** — `observability/`、`skills/workline-evaluation/`、`skills/workline-observability/` 只在实现启动后创建
+3. **不允许把任务产物放进 `docs/`** — WorklineSummary、metrics-lite 属于 `tasks/`
+4. **不允许把 runtime skill 当作普通文档改** — `skills/` 是运行时层
+5. **不允许为了美观移动 stable evidence** — 迁移必须单独立项、单开分支、跑 CI

@@ -142,6 +142,7 @@ git diff → 编译结果 → 审查报告 → 用户验证 → metrics → comm
 | `docs/V1.9_CI_REGRESSION_EVIDENCE_PLAN.md` | v1.9 工程计划——CI + regression + Git evidence |
 | `docs/evaluations/v1.8-stable/WORKLINE_GOVERNANCE_VERDICT.md` | v1.8 治理裁决 |
 | `docs/evaluations/v1.9-ci-regression-evidence/V1.9_EVIDENCE_REPORT.md` | v1.9 证据报告 |
+| `docs/WORKLINE_REPOSITORY_STRUCTURE.md` | 仓库结构治理规则——目录职责、放置规则、迁移策略 |
 | `regression/README.md` | 回归套件索引（10 个用例） |
 | `skills/workline-execution/SKILL.md` | 运行时 skill——完整管线定义 |
 | `tools/check_workline_task.py` | v1.8 harness checker |
