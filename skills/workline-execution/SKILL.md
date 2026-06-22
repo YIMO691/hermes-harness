@@ -1,8 +1,8 @@
 ---
 name: workline-execution
 description: "Execute workline methodology on real projects — analysis, SDD, implementation, review, verification"
-version: 1.6.0
-tags: [workline, sdd, agent-pipeline, et6, unity]
+version: 1.7.0
+tags: [workline, sdd, agent-pipeline, et6, unity, mode-router, conflict-gate]
 platforms: [windows, linux, macos]
 triggers:
   - "开始工作线"
@@ -12,6 +12,9 @@ triggers:
   - "独立重写"
   - "测试题"
   - "按照XX模块范式完成"
+  - "修这个Bug"
+  - "审查这个PR"
+  - "复盘这个任务"
 ---
 
 # Workline Execution
@@ -45,7 +48,66 @@ If a dependency skill is unavailable: mark `[FALLBACK]` and Hermes handles that 
 3. **Claude Code review is mandatory after every compilation pass.** Even 0-error builds. It catches pattern consistency, null safety, IsCan+Do completeness, and Handler coverage — things the compiler never will.
 4. **Git is the harness backbone.** Every coding session starts with `git init` (if not already a repo) and a feature branch. Every atomic change is committed. Claude Code reviews run on `git diff`, not full files. The `.bak` file pattern is a symptom of missing git — if you see `.bak` files, `git init` immediately.
 
-## Workline Phases
+## Mode Router
+
+v1.7 introduces task-mode routing. Not all tasks need the full pipeline. Before entering the Core Pipeline, classify the task into one of two modes.
+
+### Mode Decision (Agent Internal — do NOT ask user to pick a mode)
+
+Classify based on task characteristics:
+
+| Signal | → Mode |
+|:---|:--:|
+| New feature, multi-file change, UI + data + protocol | **full** |
+| Bug fix, single-file change, no architecture decision, screenshot/error-log driven | **quick** |
+| User explicitly said "just fix this" / "修这个Bug" / screenshot provided | **quick** |
+| User said "做这个功能" / "implement X feature" / provided design docs | **full** |
+| Ambiguous (touches UI but seems small) | **quick** with note: "if scope expands → auto-upgrade to full" |
+
+**Hermes decides the mode internally.** State the decision in the first response (e.g. "Mode: quick — single-file bug fix") but do NOT ask the user to confirm the mode.
+
+**Auto-upgrade rule**: If a quick-mode task touches any of the following after initial diagnosis → auto-upgrade to full mode. Announce the upgrade and why:
+- UI (Panel, Prefab, UGUI controls)
+- Protocol (Handler, request/response, state sync)
+- Config (config tables, table IDs, static data)
+- Performance (Update, GC, large object counts, resource loading)
+- Asset (AssetBundle, Addressables, Prefab references)
+- Platform (IL2CPP, mobile, input, resolution)
+- Hotfix (HybridCLR, DLL bytes, BuildCodeDebug)
+
+### full mode
+
+Complete SDD-driven pipeline. Required when:
+- New feature spanning multiple files
+- Changes involve UI + data + protocol + config
+- Architecture decisions needed
+- User explicitly requested full SDD/documentation
+
+Flow: ENV Check → Context Audit → Analysis → SDD → Conflict Gate → Codex Implementation → Build/Test → Claude Review → Verification → Metrics/Retro
+
+### quick mode
+
+Lightweight bug-fix pipeline. Required when:
+- Bug fix with screenshot or error log
+- Single or few file changes
+- No architecture decisions
+- No protocol/config/UI scope changes (if scope expands → auto-upgrade)
+
+Flow: ENV Check → Minimal Context Audit → Error/Log Analysis → Codex Fix → Build/Test → WorklineSummary + metrics-lite
+
+**quick mode does NOT produce**: SDD, 4 full reports, TaskSpec as separate file.
+**quick mode DOES produce**: WorklineSummary.md (combined context + fix + verification + risk), metrics-lite.yaml.
+
+### review / retro / research — NOT independent modes
+
+These are **actions available within full or quick mode**, not separate task entry points:
+- **Review-only**: Run Phase 7 (Claude Code review) standalone against existing git diff. Use when user says "审查这个PR" or "review this diff."
+- **Retro-only**: Generate retrospective + skill patch suggestions for a completed task. Use when user says "复盘上次那个任务."
+- **Research-only**: Run C2 (SDD/Plan) without C4 (coding). Output research report. Use when user says "分析一下这个方案" without asking for implementation.
+
+When user asks for review/retro/research, Hermes internally routes to the corresponding Core Pipeline phase(s) — do NOT present them as separate "modes" to the user.
+
+## Core Pipeline
 
 ### Phase 0: GATE 0 — Environment Readiness Check
 
@@ -493,6 +555,7 @@ After each task completes, produce `retrospectives/<task-id>-metrics.yaml` in th
 ```yaml
 task: <任务名>
 workline_version: <版本号>
+task_type: feature | fix | conflict_test
 started_at: <ISO时间>
 phases:
   p0_gate:
@@ -520,10 +583,25 @@ violations:
   scope_creep: 0
 total_duration_minutes: 0
 
+# For normal tasks (task_type: feature | fix):
 mentor_verified:
   sdd_review_passed: false
   phase8_user_check_passed: false
-  clarification_valid: false
+
+# For blocked tasks (task_type: conflict_test):
+mentor_verified:
+  conflict_gate_passed: false
+  executor_blocking_passed: false
+  clarification_questions_valid: false
+
+# For CONDITIONAL loop tasks:
+conditional_loop:
+  triggered: false
+  loop_count: 0
+  first_failure_type: []
+  reviewer_decision_round_1: null
+  reviewer_decision_final: null
+  codex_reinvoked: false
 
 evidence:
   commit_hash: ""
@@ -539,11 +617,104 @@ This file enables Level 2 — metric-driven evolution. After 3+ tasks with metri
 
 The metrics file goes alongside the markdown retrospective. Both are committed to the Harness repo.
 
-## References
+**Report integrity check**: After producing metrics, run `scripts/check_workline_outputs.py <task_dir>` to verify:
+- All 4 reports exist (REVIEW/ChangedFiles/TestReport/RiskReport)
+- TestReport contains real command output (not fabricated)
+- metrics.yaml has all three sections (agent_reported/mentor_verified/evidence)
+
+**Regression suite**: After any workline skill upgrade, run the regression cases in `regression/` to verify no existing capability has degraded. This has not yet been fully automated — for now, review the case definitions and confirm the expected outcomes still hold.
+
+Valid `task_type` values: `feature`, `fix`, `repair`, `conflict_requirement_test`, `conditional_stress`, `quick_bugfix`.\nValid `result` values: `passed`, `blocked_success` (task correctly blocked at Phase 3.5b), `conditional_pass`, `baseline_pass`.\n\n## Gates\n\nGates are checkpoints that can block, warn, or flag issues. v1.7 defines two tiers: **active** (implemented, enforced) and **placeholder** (defined, pending implementation after real fracture).\n\n### Gate Enforcement Rules\n\nA Gate's enforcement power depends on who executes it vs. who it checks:\n\n| Reviewer Independence | failure_policy allowed | Example |\n|:---|:---|:---|\n| `peer_agent` — different Agent from the one being checked | `hard` (blocks pipeline) | Claude Code reviews Codex output |\n| `automated` — script/compiler | `hard` | `dotnet build` errors, `check_workline_outputs.py` |\n| `human` — user must confirm | `hard` | Mentor review at Gate 3/7 |\n| `same_agent` — same Agent checks own work | `warning` only | Hermes self-checking SDD completeness |\n\n**Rule**: Only `peer_agent`, `automated`, and `human` reviewers can issue hard blocks. `same_agent` gates are advisory — they flag risks but never stop the pipeline.\n\n### Active Gates\n\n#### conflict-gate (Phase 3.5b) — `peer_agent` — hard\n\n**Reviewer**: Hermes checks the SDD against internal contradictions BEFORE Codex is invoked. This is `peer_agent` because the contradiction is between user requirements, not Agent output.\n\n**Trigger**: Every full-mode task. Optional for quick-mode (trigger if task description has suspicious constraints).\n\n**Checks**: 7 conflict dimensions (see Phase 3.5b for full checklist).\n\n**Output**: ConflictReport.md (+ ClarificationQuestions.md if BLOCKED).\n\n**Failure**: BLOCKED → stop, wait for Mentor clarification. Codex is never invoked for blocked tasks.\n\n**Validated**: 2026-06-21 backpack-favorite-sort test — 4 fatal conflicts, Codex zero-invocation.\n\n### Future Gate Placeholders\n\nThese gates are **defined but NOT implemented**. They exist as checklists that Hermes may reference during review, but they are NOT part of the mandatory pipeline. Implement ONLY after a real task fails because the gate was missing.\n\n| Gate | Trigger When | Severity | Wait For Fracture |\n|:---|:---|:--:|:---|\n| `unity-ui-gate` | Changes touch Panel, Prefab, UGUI, ScrollView, Button, list refresh, UI state | MAJOR | A task ships with UI event leak or null ref from missing lifecycle cleanup |\n| `network-gate` | Changes touch protocol, Handler, request/response, state sync, server interaction | MAJOR | A task ships with missing try/catch or unreplied handler |\n| `config-gate` | Changes touch config tables, table IDs, static data, activity params | MAJOR | A task ships with wrong config field name or missing null-ID guard |\n| `performance-gate` | Changes touch Update(), large object counts, list refresh, resource loading, GC, rendering | MAJOR | A task ships with foreach-allocation or GetComponent-in-Update |\n| `asset-gate` | Changes touch Resources, AssetBundle, Addressables, Prefab, Texture, Audio | MINOR | A task ships with missing asset path or sync load stall |\n| `platform-gate` | Changes touch mobile, IL2CPP, input, permissions, resolution | MINOR | A task ships with IL2CPP-incompatible reflection or missing touch handling |\n| `hotfix-gate` | Changes touch HybridCLR, hotfix DLL, hotfix assets, online repair | MINOR | A task ships with stale DLL bytes after source change |\n\n**How to implement a placeholder**: When fracture evidence exists → copy the gate's checklist into its own section under Gates → mark as active → add to the required gates list for the triggering mode → regression test.\n\n## References
 
 - `references/model-reverse-engineering.md` — Subagent prompt template for extracting Model fields from Hotfix code
 - `references/sdd-template.md` — Template for requirements decomposition documents
 - `references/et6-project-paths.md` — Complete file inventory and directory structure of the ET6 test project
+- `references/harness-engineering-principles.md` — Design principles for the harness itself (when to add constraints, how agents degrade, why violation markers don't block)
+- `references/langgraph-evaluation.md` — LangChain/LangGraph applicability assessment: what they can/cannot help, and when (not) to introduce them
+- System architecture doc (hermes-harness repo): `docs/工作线系统全貌.md` — Full system overview: architecture, core pipeline, mode router, agent division, metrics, regression suite, GAP analysis
+- v1.7 design rationale (think-tank): `C:\Users\20544\Desktop\Learning\think-tank\studies\2026-06-22_工作线v1.7-core-freeze审查-v4\06_model_revision.md` — Adversarial review conclusions and revised minimal scope
+
+## Regression Suite
+
+After every workline version upgrade, run the regression cases at `hermes-harness/regression/` to verify no capability degradation.
+
+| # | Case | Mode | Expected | Status |
+|:--|:---|:--:|:---|:--:|
+| 01 | Unity new feature | full | APPROVED | ✅ |
+| 02 | Unity GC fix | full | APPROVED | ✅ |
+| 03 | Python normalizer | full | APPROVED | ✅ |
+| 04 | Conflict gate | full | BLOCKED | ✅ |
+| 05 | Conditional loop | full | CONDITIONAL→APPROVED | ⚠️ |
+| 06 | Quick bugfix | quick | APPROVED + Lite reports | ⚠️ new in v1.7 |
+
+- `regression/README.md` — 6-case regression suite for workline version upgrades (hermes-harness repo)
+
+## Quick Mode: Lite Reports
+
+quick mode does NOT produce the 4 full reports. It produces 2 lite artifacts:
+
+### WorklineSummary.md
+
+```markdown
+# WorklineSummary
+
+## Task
+[One-line description + mode decision reason]
+
+## Context Audit (minimal)
+- Project path:
+- Git status:
+- Files touched:
+- Reference found: yes/no
+
+## Fix
+[What Codex changed, in 1-3 bullets]
+
+## Verification
+| Check | Result |
+|:---|---|
+| Build | pass/fail |
+| Test run | pass/fail/output |
+| Manual check | description |
+
+## Risks
+- [Any remaining concern or "none"]
+
+## Auto-upgrade Check
+- [ ] Scope stayed within quick-mode limits
+- [ ] If NO, explain upgrade to full: <reason>
+```
+
+### metrics-lite.yaml
+
+```yaml
+task_id: ""
+mode: quick
+task_type: bugfix
+project_type: unity_demo | et6 | python_tool | obsidian_tool
+result: approved | needs_fix | rejected
+
+build:
+  attempted: true
+  passed: true | false
+  initial_errors: 0
+
+review:
+  attempted: true | false
+  self_review_only: true
+
+scope:
+  unrelated_files_changed: 0
+  auto_upgraded_to_full: false
+  violations: []
+
+duration_minutes: 0
+```
+
+**Report integrity for quick mode**: After completing a quick task, verify:
+- WorklineSummary.md exists and has real output in all sections
+- metrics-lite.yaml is complete
+- No full-mode reports were accidentally generated (SDD, 4 reports)
 ## ET6 GM Testing Workflow
 
 When testing requires currency, materials, or rank conditions, use the GM panel (not manual gameplay). See `references/et6-gm-testing.md` for the complete guide including item IDs, test patterns, and boundary checklists.
@@ -578,4 +749,6 @@ GM 面板入口：九宫格（数值/属性/OSS/背包/境界/DNA/Organ/日期/�
 - **dotnet build path** — `dotnet build Server.sln` must run from the ET6 project ROOT (where Server.sln lives), NOT from the Server/ subdirectory. Running from Server/ produces MSB1003 ("未包含项目或解决方案文件"). The ET6 root contains: Server.sln, Robot.sln, Server/, Unity/, Tools/, etc.
 - **GM system reality** — the ET6 project ships with two GM panels: `UIGMRank` (functional, can set rank/level via C2Game_GmSetRank) and `UIGMTest` (empty stubs — 5 test buttons with all handler code commented out). The server has `PlayerBagComponent_GmLogic.cs` with `C2Game_GmBagAdd` for adding items, but requires `player.m_bGm == true`. When the user needs to test nerve/raffle with insufficient in-game resources, they need functional GM commands — do not assume the existing GM panel covers their needs. See `references/et6-gm-system.md`.
 - **`.bak` files are a red flag** — if you see `*.cs.bak`, `*.cs.bak2` scattered in the project, it means previous sessions modified code without git. The project has no version control. Run `git init` before any coding. The `.bak` pattern means every change is a gamble with no rollback.
-- **Git is not optional** — a workline without git is a Harness without a backbone. Without `git diff`, Claude Code reviews entire files (waste). Without `git reset`, every mistake requires manual `.bak` restoration (slow). Without `git branch`, parallel work on different modules is impossible. `git init` is Phase 4 Step 0 — not a nice-to-have, a prerequisite.
+- **Constraint analysis precision — distinguish SetActive(false) from Destroy/unload** — when analyzing requirements like "关闭后状态仍存在", be precise about lifecycle: in Unity, closing a UI panel is often `SetActive(false)`, which preserves MonoBehaviour fields and memory state. Do NOT equate "panel closed" with "scene unloaded" or "component destroyed" unless the requirement explicitly says so. The correct constraint check is: "does the state survive scene reload, Play/Stop cycle, or data reload?" — not "does it survive hiding the panel." See retrospective `2026-06-21-conflict-test` §Mentor feedback for the original imprecision that triggered this pitfall.\n- **Git is not optional** — a workline without git is a Harness without a backbone. Without `git diff`, Claude Code reviews entire files (waste). Without `git reset`, every mistake requires manual `.bak` restoration (slow). Without `git branch`, parallel work on different modules is impossible. `git init` is Phase 4 Step 0 — not a nice-to-have, a prerequisite.
+- **Don't force CONDITIONAL with Python tasks** — Codex handles Python repairs very conservatively (often 1-3 lines changed, no scope creep). Two attempts to trigger CONDITIONAL with Python regression-repair tasks failed (frontmatter-merge: 36/36 first pass; field-order: 42/42 first pass). If you need to stress-test the CONDITIONAL loop, use Unity tasks — they are more likely to trigger over-engineering or scope creep. Python tasks are better suited for baseline validation. See `retrospectives/2026-06-21-frontmatter-baseline-metrics.yaml` and `retrospectives/2026-06-21-field-order-metrics.yaml`.
+- **Constraints must not block output files** — if a requirement says "不新增任何文件", treat it as "不新增业务代码文件" unless explicitly stated otherwise. Otherwise SDD/REVIEW/ChangedFiles/TestReport/RiskReport — all mandatory outputs — would be impossible to produce.

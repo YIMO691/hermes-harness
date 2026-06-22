@@ -21,3 +21,4 @@
 | 03 | `python-normalizer` | 非 Unity 修复 | APPROVED | 非 Unity 通用性 |
 | 04 | `conflict-gate` | 冲突检测 | BLOCKED | Phase 3.5b 拦截 |
 | 05 | `conditional-loop` | 回路压测 | CONDITIONAL→APPROVED | Loop 机制 |
+| 06 | `quick-bugfix` | quick 模式 | APPROVED + Lite 报告 | Mode Router + Lite 报告 |
