@@ -1,0 +1,12 @@
+task_id: regression-10
+mode: quick
+result: approved
+changed_files: 1
+build:
+  passed: true
+user_verified: true
+scope:
+  violations: []
+auto_upgrade:
+  required: true
+  reason: "touches UI structure"

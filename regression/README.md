@@ -22,3 +22,7 @@
 | 04 | `conflict-gate` | 冲突检测 | BLOCKED | Phase 3.5b 拦截 |
 | 05 | `conditional-loop` | 回路压测 | CONDITIONAL→APPROVED | Loop 机制 |
 | 06 | `quick-bugfix` | quick 模式 | APPROVED + Lite 报告 | Mode Router + Lite 报告 |
+| 07 | `quick-scope-violation` | quick 模式 | BLOCKED | scope check |
+| 08 | `full-metrics-conflict` | full 模式 | BLOCKED | consistency check |
+| 09 | `full-missing-reports` | full 模式 | BLOCKED | completeness check |
+| 10 | `quick-auto-upgrade-bypass` | quick 模式 | BLOCKED | auto-upgrade check |

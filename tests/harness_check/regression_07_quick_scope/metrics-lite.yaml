@@ -1,0 +1,13 @@
+task_id: regression-07
+mode: quick
+result: approved
+changed_files: 3
+build:
+  passed: true
+user_verified: true
+scope:
+  violations:
+    - unrelated_file: docs/README.md
+auto_upgrade:
+  required: false
+  reason: ""

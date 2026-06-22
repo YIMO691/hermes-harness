@@ -1,0 +1,15 @@
+task_id: regression-09
+mode: full
+result: approved
+build:
+  attempted: true
+  passed: true
+review:
+  attempted: true
+  verdict: APPROVED
+scope:
+  unrelated_files_changed: 0
+  violations: []
+user_verified: true
+regression_required: false
+skill_patch_required: false
