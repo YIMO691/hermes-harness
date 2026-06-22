@@ -1,0 +1,12 @@
+task_id: v1.10-new-item-badge-quick
+mode: quick
+result: prepared
+changed_files: []
+build:
+  passed: false
+user_verified: false
+scope:
+  violations: []
+auto_upgrade:
+  required: false
+  reason: ""
