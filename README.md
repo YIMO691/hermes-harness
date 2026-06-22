@@ -1,102 +1,162 @@
 # Hermes Harness
 
-> Personal Agent Engineering Workline — SDD-driven, Harness-constrained, Loop-ready.
+> 个人 Agent 工程管线 — SDD 驱动、审查把关、证据追踪。
 
-## 版本路线
+## 概述
 
-```
-v0.0  Prompt 玩具
-  ↓
-v1.0  SOP 流程
-  ↓
-v1.3  Workline 基础版（Agent 分工 + GATE + Review + CONDITIONAL 雏形）
-  ↓
-v1.5  结构化 Harness（SDD 非目标 + 4 份报告 + 越权检查 + Metrics 驱动）
-  ↓
-v1.6  Stable Harness（Conflict Gate + 三段式 metrics + Regression suite）
-  ↓
-v1.7  Core-Freeze ✅ 当前版本
-  │    Mode Router (full/quick) + Conflict Gate enforcement + Lite reports
-  │    Gate plugin spec + 7 placeholder gates (defined, not implemented)
-  │    验证：3 个任务（1 regression + 1 real quick + 1 full feature）
-  │    设计审查：思考线 v4 反方审判 → 砍半修正
-  ↓
-v1.9  Sensor Automation（自动检查脚本）
-  ↓
-v2.0  Loop Engineering 稳定版（APPROVED/BLOCKED/CONDITIONAL 全验证）
-  ↓
-v3.0  Multi-Agent（等前面稳了再说）
-```
+Hermes Harness 是一个个人 AI Agent 工程管线。它把需求、Bug、代码修改、审查、验证、复盘组织成**可追踪、可验证、可演进**的工程流程。
 
-## v1.7 核心变更
+它不是"用 AI 写代码"的工具，而是一套约束 AI 辅助开发的管线：
 
-```
-From: 一个大而全的线性流程（Phase 0-8，所有任务走同一条路）
-To:   2 模式路由 + 1 active Gate + 7 placeholder + Lite 报告
-```
-
-| 变更 | 说明 |
-|:---|:---|
-| Mode Router | full（新功能/多文件）+ quick（Bug 修复/单文件），Agent 内部判断 |
-| Conflict Gate | 唯一 active hard gate，peer_agent 审查，BLOCKED 时 Codex 零调用 |
-| Placeholder Gates | UI/Network/Config/Performance/Asset/Platform/Hotfix — 已定义，断裂后激活 |
-| Lite 报告 | quick 模式：WorklineSummary.md + metrics-lite.yaml（不做 4 份完整报告） |
-| 不拆分 skill 目录 | 保持单文件结构，600 行可管理 |
-| 不引入 LangChain/LangGraph | 决策记录在 `references/langgraph-evaluation.md` |
+- **模式路由** — 功能开发走 full，Bug 修复走 quick
+- **冲突检测** — 在编码前阻断矛盾需求
+- **Agent 分工** — Hermes 调度、Codex 编码、Claude Code 审查
+- **结构化证据** — 每个任务留下 git commit、报告、metrics、复盘
+- **Git 工作流** — 分支规范、PR 模板、发布打 tag、回滚规则
 
 ## 当前状态
 
-| 维度 | 等级 |
-|:---|:--:|
-| SOP | ✅ 5/5 |
-| SDD | ✅ 5/5 |
-| Harness | ✅ 4.0/5 — Mode Router + Gate 执行规则 |
-| Loop | ⚠️ 2.5/5 — 机制有，多轮证据不足 |
-| Sensor | ⚠️ 3.0/5 — `check_workline_outputs.py` |
-| 通用性 | ✅ 4.0/5 — Unity + Python + quick/full 双模式 |
+| 项目 | 状态 |
+|:---|:---|
+| 稳定版本 | **v1.7-stable** |
+| 核心模式 | full / quick |
+| Active Gate | Conflict Gate |
+| Skill 结构 | 单文件 Workline Core |
+| Git 工作流 | Workline Git Workflow v1 |
+| LangGraph / LangChain | 未引入 |
+| 回归套件 | 6 个用例（5 验证，1 待补） |
 
-## 回归套件
+**证据**：v1.7-core-freeze-minimal 通过三项验证——一个回归 quick bugfix、一个真实 quick bugfix、一个 full 功能任务。
 
-| # | 用例 | 模式 | 结果 |
-|:--|:---|:--:|:--:|
-| 01 | Unity 新建功能 | full | ✅ |
-| 02 | Unity GC 修复 | full | ✅ |
-| 03 | Python 修复 | full | ✅ |
-| 04 | 冲突需求拦截 | full | ✅ BLOCKED |
-| 05 | CONDITIONAL 回路 | full | ⚠️ 待补证据 |
-| 06 | Quick bugfix | quick | ✅ |
+## 解决什么问题
 
-## v1.7 设计审查
+> AI 能生成代码，但没有范围约束、审查、验证和证据，结果不稳定。
 
-v1.7 草案（5 模式 + 8 Gate + 6 目录重组）经思考线 v4 反方审判后砍半修正：
+工作线补齐了：
 
-| 攻击者 | 发现 | 结果 |
-|:---|:---|:---|
-| 管线原则 | 5 项提案仅 1.5 项对应真实断裂点 | 砍到 2 模式 + 1 Gate |
-| 开发者 | TaskSpec 增加入口负担 | 改为 Agent 内部判断 |
-| 架构师 | 6 层抽象协调税 > 收益 | 保持单文件 |
+- 任务范围控制（SDD + 非目标声明）
+- full / quick 模式分流
+- 编码前冲突检测
+- 多 Agent 质量门
+- 编译和审查验证
+- metrics 和复盘记录
+- Git 证据链和回滚流程
 
-审查记录：`think-tank/studies/2026-06-22_工作线v1.7-core-freeze审查-v4/`
-
-## 进化原则
-
-1. 只加固断裂点 — 约束 = 成本，不在没断的地方加墙
-2. 每改必 commit — 引用复盘证据
-3. 实验走 branch — 改崩了 `git revert`
-4. 不追 CONDITIONAL — 等真实任务自然失败
-5. 验证后打 tag — 不基于文档打稳定版
-
-## 仓库生态
+## 架构
 
 ```
-hermes-harness                    ← 管线本体（skill + metrics + 回归套件 + snippets）
-  ├── BackpackDemo                ← Unity 验证场
-  ├── obsidian-normalizer         ← Python 验证场
-  ├── unity-verification-projects ← 10 个历史 Unity 项目（Private）
-  ├── unity-learning-lab          ← 6 个学习实验（公开作品集）
-  └── unity-code-review-agent     ← C# 静态审查工具
+需求 / Bug
+  → Mode Router（full / quick）
+    → Conflict Gate（仅 full）
+      → Agent 执行（Hermes / Codex / Claude Code）
+        → Build / Review / Verify
+          → Metrics / Retro
+            → Git Evidence
 ```
 
-## 仓库沿革
+单文件 Core。Full/Quick 双入口。一个 active gate。Full/Lite 双套报告。Git 工作流负责分支规范和发布管理。
 
-本仓库取代了先前两个空壳仓库（`unity-agent-pipeline-template` / `unity-client-dev-harness`），吸收了 `learning-backup` 中的 snippets 和 Unity 项目。v1.7 是首个经思考线审查 + 三项验证后 tag 的版本。
+→ 详情：[`docs/WORKLINE_ARCHITECTURE_V1.7_STABLE.md`](docs/WORKLINE_ARCHITECTURE_V1.7_STABLE.md)
+
+## 模式
+
+### full
+
+**适用**：新功能、多文件修改、涉及 UI + 数据状态。
+
+**流程**：环境检查 → 上下文审计 → SDD → Conflict Gate → Codex 编码 → 编译/测试 → Claude 审查 → 用户验证 → Metrics/复盘
+
+**产出**：TaskSpec、SDD、ConflictReport、REVIEW、ChangedFiles、TestReport、RiskReport、metrics、retrospective（9 份）
+
+### quick
+
+**适用**：小 Bug、单文件修改、无架构决策。
+
+**流程**：环境检查 → 最小审计 → Codex 修复 → 编译/测试 → WorklineSummary + metrics-lite
+
+**产出**：WorklineSummary.md、metrics-lite.yaml（2 份）
+
+**自动升级**：修复触及 UI 结构、协议、配置、资源、平台、热更 → 自动升级为 full。
+
+## Git 工作流
+
+```
+main                    ← 生产就绪，只接受 release/hotfix merge
+  └── develop           ← 日常集成，所有 feature/fix/docs 合入这里
+      ├── feature/<id>  ← full 模式
+      ├── fix/<id>      ← quick 模式
+      └── docs/<topic>  ← 文档
+```
+
+- full → `feature/<id>` → squash merge 到 develop
+- quick → `fix/<id>` → squash merge 到 develop
+- Release：`develop` → `release/<ver>` → `main` + tag → 回合 develop
+- Hotfix：`main` → `hotfix/<id>` → `main` + tag → 回合 develop
+
+→ 详情：[`docs/WORKLINE_GIT_WORKFLOW.md`](docs/WORKLINE_GIT_WORKFLOW.md)
+
+## 仓库结构
+
+```
+hermes-harness/
+├── docs/
+│   ├── WORKLINE_ARCHITECTURE_V1.7_STABLE.md   ← 架构定义
+│   └── WORKLINE_GIT_WORKFLOW.md               ← Git 工作流
+├── skills/workline-execution/
+│   └── SKILL.md                               ← 运行时 skill（v1.7.0）
+├── regression/
+│   ├── README.md                              ← 6 个回归用例索引
+│   └── 06_quick_bugfix.md
+├── scripts/
+│   └── check_workline_outputs.py              ← 报告完整性检查
+├── retrospectives/                            ← 任务复盘 + metrics
+└── snippets/                                  ← 可复用代码片段
+```
+
+## 验证
+
+任务完成的标准不是"代码写完了"，而是**有证据**。标准证据链：
+
+```
+git diff → 编译结果 → 审查报告 → 用户验证 → metrics → commit hash
+```
+
+**打 stable tag 要求**：回归通过 + 一个真实 quick + 一个真实 full + 架构文档更新 + git status clean。
+
+## 文档索引
+
+| 文档 | 用途 |
+|:---|:---|
+| `docs/WORKLINE_ARCHITECTURE_V1.7_STABLE.md` | 稳定架构定义（12 章） |
+| `docs/WORKLINE_GIT_WORKFLOW.md` | Git 工作流——分支模型、PR 模板、Release/Hotfix |
+| `regression/README.md` | 回归套件索引（6 个用例） |
+| `skills/workline-execution/SKILL.md` | 运行时 skill——完整管线定义 |
+
+## 路线图
+
+**当前阶段**：v1.7 稳定使用期。不出现真实断裂点，不启动 v1.8。
+
+v1.8 触发条件（至少一个成立）：
+- quick 被滥用（bug 率上升）
+- full 过重（连续 3+ 任务超 30 分钟）
+- Conflict Gate 漏掉真实冲突
+- 某类 Unity 问题重复出现 2 次以上
+- metrics 显示风险指标持续上升
+
+**不能触发 v1.8 的情况**：觉得架构不够漂亮、想提前实现全部 Gate、想接 LangGraph 证明标准化、想拆目录让结构更像工程。
+
+## 不做的事
+
+当前项目**不是**：
+- 完整游戏客户端研发平台
+- CI/CD 系统
+- 多人团队管理工具
+- LangChain / LangGraph 运行时
+- Unity 手动验证的替代品
+- 人工代码审查的替代品
+
+当前聚焦：**让 AI 辅助的工程任务范围可控、可审查、可验证、可演进**。
+
+---
+
+*最后更新：2026-06-22 · v1.7-stable*
