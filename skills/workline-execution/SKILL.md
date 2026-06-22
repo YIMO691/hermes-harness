@@ -645,7 +645,7 @@ After every workline version upgrade, run the regression cases at `hermes-harnes
 | 03 | Python normalizer | full | APPROVED | ✅ |
 | 04 | Conflict gate | full | BLOCKED | ✅ |
 | 05 | Conditional loop | full | CONDITIONAL→APPROVED | ⚠️ |
-| 06 | Quick bugfix | quick | APPROVED + Lite reports | ⚠️ new in v1.7 |
+| 06 | Quick bugfix | quick | APPROVED + Lite 报告 | ✅ |
 
 - `regression/README.md` — 6-case regression suite for workline version upgrades (hermes-harness repo)
 
