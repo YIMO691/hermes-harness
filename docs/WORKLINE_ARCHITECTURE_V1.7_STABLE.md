@@ -427,7 +427,7 @@ v1.7-stable 的价值不是"功能更多"，而是：
 | 回归套件 | `regression/README.md` | 6 个用例 |
 | 报告检查 | `scripts/check_workline_outputs.py` | 完整性验证 |
 | LangGraph 评估 | `skills/workline-execution/references/langgraph-evaluation.md` | 决策记录 |
-| 系统全貌 | `docs/工作线系统全貌.md` | v1.6 时期的全面分析（历史参考） |
+| 系统全貌（历史） | `docs/SUPERSEDED_工作线系统全貌_v1.6.md` | v1.6 时期的全面分析（已归档） |
 | v1.7 反方审查 | `think-tank/studies/2026-06-22_工作线v1.7-core-freeze审查-v4/` | 设计审查记录 |
 | v1.7 复盘 | `retrospectives/2026-06-22-v1.7-stable-retro.md` | 本次版本复盘 |
 
