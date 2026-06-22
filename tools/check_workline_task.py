@@ -22,7 +22,9 @@ from pathlib import Path
 try:
     import yaml
 except ImportError:
-    print("ERROR: PyYAML required. Install: pip install pyyaml")
+    print("Missing dependency: PyYAML")
+    print("Install with:")
+    print("  pip install -r requirements-dev.txt")
     sys.exit(2)
 
 

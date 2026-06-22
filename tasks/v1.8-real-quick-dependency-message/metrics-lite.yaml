@@ -1,0 +1,13 @@
+task_id: v1.8-real-quick-dependency-message
+mode: quick
+result: approved
+changed_files:
+  - tools/check_workline_task.py
+build:
+  passed: true
+user_verified: true
+scope:
+  violations: []
+auto_upgrade:
+  required: false
+  reason: ""
