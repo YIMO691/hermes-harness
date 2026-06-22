@@ -19,9 +19,14 @@
 本仓库仅管理：
 - `skills/` — 管线约束（纯文本，无密钥）
 - `retrospectives/` — 复盘记录（脱敏后）
-- 项目文档（README / WORKFLOW / AGENTS / CONTRIBUTING）
+- `regression/` — 回归用例
+- `tools/` — checker 等工具
+- `tests/` — 测试 fixtures
+- `.github/workflows/` — CI 配置
+- 项目文档（README / CONTRIBUTING / WORKFLOW / AGENTS / SECURITY）
 
 不管理：
 - `~/.hermes/` 完整配置目录（含 token、provider 配置）
 - ET6 工程代码
 - 任何含密钥的文件
+- `.env` 文件

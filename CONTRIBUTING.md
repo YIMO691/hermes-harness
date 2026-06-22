@@ -31,10 +31,10 @@ patch: <skill名> - <原因>
 
 ```bash
 # 签稳定版
-git tag v2.0-stable -m "Git集成 + 硬约束 + 审查GATE，通过 ET6 全量验证"
+git tag v1.9-stable -m "CI + regression 10/10 + Git workflow execution evidence"
 
 # 回退
-git checkout v1.0-stable
+git checkout v1.8-stable
 ```
 
 ## 实验版本
@@ -58,3 +58,19 @@ cp -r skills/<name> ~/AppData/Local/hermes/skills/<name>/
 ```
 
 **如果忘记同步**：下次任务加载旧版本 skill，管线退化到上一个 tag。commit 后立即 cp。
+
+## CI
+
+```bash
+# 本地运行 checker
+python tests/harness_check/run_harness_check_cases.py
+
+# CI 自动触发：push / PR / workflow_dispatch
+# 配置文件：.github/workflows/workline-check.yml
+```
+
+## 当前版本
+
+- v1.9-stable：CI + regression 10/10 + Git workflow execution evidence
+- v1.8-stable：minimal harness checker
+- v1.7-stable：workline core freeze + mode router

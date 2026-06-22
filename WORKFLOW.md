@@ -81,7 +81,7 @@ git commit -m "patch: <skill> - <原因>"
 
 | tag | 含义 |
 |:---|:---|
-| `v1.4-stable` | SDD 非目标 + 4 份结构化报告 + 越权检查 + 面试复盘 |
-| `v1.3-stable` | 依赖加载 + GATE 0 + 审查模板 + 回路机制 |
-| `v1.2-stable` | Git 集成 + Agent 契约 + 代码审计 + 审查 GATE |
+| `v1.7-stable` | Mode Router + Conflict Gate enforcement + Lite reports |
+| `v1.8-stable` | minimal harness checker (10 cases) |
+| `v1.9-stable` | CI + regression 10/10 + Git workflow execution evidence |
 | `exp/*` | 实验分支，未验证 |
