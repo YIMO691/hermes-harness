@@ -1,8 +1,8 @@
 ---
 name: workline-execution
 description: "Execute workline methodology on real projects — analysis, SDD, implementation, review, verification"
-version: 1.7.0
-tags: [workline, sdd, agent-pipeline, et6, unity, mode-router, conflict-gate]
+version: 1.11.0
+tags: [workline, sdd, agent-pipeline, et6, unity, mode-router, conflict-gate, office-onboarding, safe-note, office-lite, full-harness, personal-lab]
 platforms: [windows, linux, macos]
 triggers:
   - "开始工作线"
@@ -47,10 +47,61 @@ If a dependency skill is unavailable: mark `[FALLBACK]` and Hermes handles that 
 2. **Hermes schedules, Codex writes, Claude Code reviews.** Hermes does NOT write code. Delegate coding to Codex (via `delegate_task` or `codex exec`). Hermes' job: analyze, plan, verify compilation, coordinate agents.
 3. **Claude Code review is mandatory after every compilation pass.** Even 0-error builds. It catches pattern consistency, null safety, IsCan+Do completeness, and Handler coverage — things the compiler never will.
 4. **Git is the harness backbone.** Every coding session starts with `git init` (if not already a repo) and a feature branch. Every atomic change is committed. Claude Code reviews run on `git diff`, not full files. The `.bak` file pattern is a symptom of missing git — if you see `.bak` files, `git init` immediately.
+5. **Office safety first.** When working in a company context, compliance gates execute before any v1.10 pipeline phase. Unknown company policy → safe-note (no code access). See "## Office Onboarding (v1.11)" below.
+
+## Office Onboarding (v1.11)
+
+v1.11 adds a safety shell around the v1.10 pipeline for company onboarding scenarios. When a task involves a company project (not a personal-lab project), the following rules activate BEFORE the Mode Router.
+
+### Quick Reference
+
+**Default**: If the task mentions a company project and Company Policy is UNKNOWN → force `safe-note`.
+**Personal projects**: HotZoneTestC, DailyReward, ET6 source, hermes-harness, Learning → `personal-lab` (full v1.10 capability, no safety shell).
+
+Full mode/gate specs: `docs/OFFICE_ONBOARDING_MODES.md` and `docs/OFFICE_ONBOARDING_GATES.md`.
+Design rationale: `docs/OFFICE_ONBOARDING_WORKLINE_V1.11.md`.
+
+### Four Modes
+
+| Mode | Trigger | Policy Gate | Code Access | Mark |
+|:---|:---|:---:|:---:|:---|
+| **safe-note** | Company context + Policy UNKNOWN/DENIED | — | None | `[SAFE_NOTE]` |
+| **office-lite** | Policy = ALLOWED_NOTE | — | Read user-pasted snippets only | `[OFFICE_LITE]` |
+| **full-harness** | Policy = ALLOWED_AGENT + user authorizes scope | — | Authorized dirs only | `[FULL_HARNESS: <scope>]` |
+| **personal-lab** | Known personal projects (HotZoneTestC, DailyReward, ET6, har-harness, Learning) | — | Full v1.10 | `[PERSONAL_LAB]` |
+
+### Five Gates (execute in order)
+
+| # | Gate | What It Does |
+|:--|:---|:---|
+| 1 | **Company Policy Gate** | Route to safe-note/office-lite/full-harness based on user-declared policy state (UNKNOWN → safe-note). |
+| 2 | **Action Permission Gate** | Block actions above the current mode's allowed Level (L6: push/commit/daemon → always blocked). |
+| 3 | **Sensitive Data Gate** | Scan every output for source code/paths/class names/protocols/configs/secrets. Auto-redact or block. |
+| 4 | **Persistence Gate** | Block saving company-specific content to files/Obsidian/memory. Only abstract experience permitted. |
+| 5 | **Mode Switch Gate** | Three-line switching (work/learn/think) requires `clarify()` — never auto-switch. |
+
+### Key Rules (always active in company context)
+
+- 公司规范未确认时禁止扫描、读取、写入、调用 Codex 修改公司代码。
+- Codex 是"待授权执行者"（office-lite 下不自动调用，full-harness 下需显式授权目录范围）。
+- ChatGPT/外部模型只接收脱敏后的抽象问题和方案，不接收公司源码/文档/具体需求/Bug细节。
+- 三线切换（学习线/工作线/思考线）必须通过 `clarify()` 询问用户，绝不自动切换。
+- Level 6 动作（git commit/push、后台常驻）在任何模式下都禁止。
+
+### Mode Priority (for Mode Router)
+
+```text
+1. If project path is in personal-lab list → personal-lab (no safety shell, full v1.10)
+2. If task mentions "公司"/"项目" and not personal-lab → check Company Policy Gate
+3. If Company Policy = UNKNOWN → safe-note
+4. If Company Policy = ALLOWED_NOTE → office-lite
+5. If Company Policy = ALLOWED_AGENT + user authorized scope → full-harness
+```
 
 ## Mode Router
 
-v1.7 introduces task-mode routing. Not all tasks need the full pipeline. Before entering the Core Pipeline, classify the task into one of two modes.
+v1.7 introduces task-mode routing. Not all tasks need the full pipeline. Before entering the Core Pipeline, classify the task.
+v1.11 extends Mode Router with Office Onboarding modes (see above). For company-context tasks, the office mode is resolved first; for personal-lab tasks, the original full/quick router applies.
 
 ### Mode Decision (Agent Internal — do NOT ask user to pick a mode)
 
