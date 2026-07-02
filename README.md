@@ -1,11 +1,10 @@
-# Hermes Harness — Personal SDD-Harness Workline
+# Hermes Harness Workline
 
-> A personal AI Agent engineering harness for structured task execution, safe office onboarding, and evidence-driven governance.
+> Personal Agent Engineering Workline with Safe Office Onboarding.
 
 ![Version](https://img.shields.io/badge/version-v1.11--office--onboarding--stable-blue)
 ![Status](https://img.shields.io/badge/status-Stable%20Personal%20Harness-green)
 ![CI](https://img.shields.io/badge/CI-passing-brightgreen)
-![Scope](https://img.shields.io/badge/scope-no%20LangGraph%20%7C%20no%20Dashboard-lightgrey)
 
 ---
 
@@ -17,105 +16,99 @@ v1.11-office-onboarding-stable
 
 ## What This Is
 
-这是一个个人 Agent Engineering / SDD-Harness 工作线仓库。它不是一个公司工具，不是自动化开发替代品，而是一套**帮助你安全、结构化地执行开发任务的个人管线**。
+一个**个人 Agent Engineering / SDD-Harness 工作线**——用于结构化任务执行、需求拆解、审查、复盘、经验注入，以及公司入职场景下的安全合规辅助。
 
-v1.10 形成了 canonical baseline（Intake / AUTO-BLOCK / Coverage / Experience Injection）。v1.11 在 v1.10 外面增加 **Office Onboarding 安全壳**，解决公司入职场景下"规范未知、权限未知、信息安全未知"的问题。
+它不是公司工具，不是自动化开发替代品。它是一个帮助你安全、结构化地工作的个人管线。
 
-## Why v1.11
+## System Overview
 
-| 场景 | v1.10 | v1.11 |
-|:---|:---|:---|
-| 个人测试题（HotZoneTestC） | ✅ 完整管线 | ✅ 与 v1.10 兼容 |
-| 公司入职第一周 | ❌ 假设已知规范/可写入 | ✅ safe-note：脱敏笔记 + 提问 |
-| 公司允许个人笔记 | ❌ 无中间模式 | ✅ office-lite：需求拆解，不触代码 |
-| 公司明确允许 Agent | — | ✅ full-harness：限定范围，需授权 |
-
-## Architecture
-
+```mermaid
+flowchart TD
+    U[User / Final Decision Maker] --> P[Safety & Policy Layer]
+    P --> R[Mode Router]
+    R --> S[safe-note]
+    R --> O[office-lite]
+    R --> F[full-harness]
+    R --> L[personal-lab]
+    S --> H[Hermes]
+    O --> H
+    F --> H
+    L --> H
+    H --> C[Codex — Authorized Executor]
+    H --> G[ChatGPT — External Advisor]
+    H --> V[Obsidian — Sanitized Knowledge]
 ```
-┌──────────────────────────────────────┐
-│  v1.11 Office Onboarding Safety Layer │  ← 新（4 modes + 5 gates）
-│  ┌────────────────────────────────┐  │
-│  │  v1.10 Canonical Baseline      │  │  ← 已完整回填
-│  │  Intake / AUTO-BLOCK / Coverage │  │
-│  │  / Experience Injection / Core  │  │
-│  └────────────────────────────────┘  │
-└──────────────────────────────────────┘
+
+## Version Architecture
+
+```mermaid
+flowchart TD
+    V10[v1.10 Canonical Baseline] --> V11[v1.11 Office Onboarding Safety Layer]
+    V10 --> Intake[Requirement Intake]
+    V10 --> AutoBlock[AUTO-BLOCK Rules ×4]
+    V10 --> Coverage[Coverage Gate]
+    V10 --> Injection[Experience Injection]
+    V11 --> Modes[4 Modes]
+    V11 --> Gates[5 Gates]
 ```
 
 ## Modes
 
 | Mode | Trigger | What You Can Do |
 |:---|:---|:---|
-| **safe-note** | Company policy unknown | 脱敏笔记、提问话术、日报模板 |
-| **office-lite** | Company allows personal notes | + 需求拆解、影响面、验收标准（不触代码） |
-| **full-harness** | Company + user authorized | 完整 v1.10 管线（限定目录范围） |
-| **personal-lab** | Personal projects | 完整 v1.10 管线（无安全限制） |
+| **safe-note** | Company policy unknown | Sanitized notes, question templates, daily reports |
+| **office-lite** | Company allows personal notes | + Requirement breakdown, impact analysis (no code access) |
+| **full-harness** | Company + user authorized | Full v1.10 pipeline (authorized directories only) |
+| **personal-lab** | Personal projects | Full v1.10 pipeline (no safety limits) |
 
 ## Gates
 
 | Gate | Purpose |
 |:---|:---|
-| **Company Policy Gate** | Unknown policy → safe-note by default |
+| **Company Policy Gate** | Unknown policy → `safe-note` by default |
 | **Sensitive Data Gate** | Auto-redact source code/paths/class names before output |
 | **Action Permission Gate** | 6-level action control — L6 (commit/push) always blocked |
-| **Persistence Gate** | Block saving company-specific data to files/Obsidian/memory |
-| **Mode Switch Gate** | Work/Learn/Think line switching requires manual confirmation |
+| **Persistence Gate** | Block saving company data to files, Obsidian, or memory |
+| **Mode Switch Gate** | Work / Learn / Think line switching requires manual confirmation |
 
-## Quick Start
+## Daily Usage Flow
 
-### Personal Lab
+```mermaid
+flowchart LR
+    Morning[Morning Work Card] --> Req[Requirement Intake Lite]
+    Req --> Bug[Bug Triage Lite]
+    Bug --> Mentor[Mentor Question]
+    Mentor --> Report[Daily Report / Retrospective]
+```
 
-For ET6 source, HotZoneTestC, DailyReward, personal demos. Full v1.10 capability.
-
-### Office Onboarding
-
-For your first week at a company. Start here:
-
-→ `docs/OFFICE_ONBOARDING_FIRST_WEEK_SOP.md`
-
-### Daily Usage
-
-For everyday lightweight use:
-
-→ `docs/OFFICE_ONBOARDING_DAILY_USAGE_GUIDE.md`
-
-## Key Documents
+## Start Here
 
 | Document | Purpose |
 |:---|:---|
 | `docs/INDEX.md` | Full documentation index |
-| `docs/OFFICE_ONBOARDING_WORKLINE_V1.11.md` | v1.11 design rationale |
 | `docs/OFFICE_ONBOARDING_FIRST_WEEK_SOP.md` | Day 1–5 onboarding roadmap |
-| `docs/OFFICE_ONBOARDING_DAILY_USAGE_GUIDE.md` | Daily template guide |
-| `docs/OBSIDIAN_WORK_VAULT_SAFE_STRUCTURE.md` | Obsidian vault safety rules |
-| `reports/v1.11/v1.11_office_onboarding_release_notes.md` | Release notes |
-| `skills/workline-execution/SKILL.md` | Runtime skill (v1.11.0) |
+| `docs/OFFICE_ONBOARDING_DAILY_USAGE_GUIDE.md` | Daily workflow guide |
+| `docs/OFFICE_ONBOARDING_WORKLINE_V1.11.md` | v1.11 design rationale |
+| `docs/OBSIDIAN_WORK_VAULT_SAFE_STRUCTURE.md` | Vault safety rules |
 
 ## Safety Notice
 
-**When company policy is unknown or not confirmed:**
+**Before company policy is confirmed:**
 
 - ❌ Do not scan company project directories
 - ❌ Do not read company source code
-- ❌ Do not invoke Codex to modify company code
+- ❌ Do not let Codex modify company code
 - ❌ Do not send company details to ChatGPT
-- ❌ Do not save company-specific information
+- ❌ Do not persist company-sensitive information
 
-**Default mode in company context: safe-note.**
+**Default mode in company context: `safe-note`.**
 
 ## Repository Status
 
 ```
-v1.11-office-onboarding-stable — 4 modes, 5 gates, 6 templates, 6 regression cases
-              ↓
-v1.10 canonical baseline — Intake / AUTO-BLOCK ×4 / Coverage / Experience Injection
-              ↓
-v1.9-stable — CI + Regression 10/10
-v1.8-stable — Harness Checker
-v1.7-stable — Workline Core (Mode Router + Conflict Gate)
+stable tag:  v1.11-office-onboarding-stable
+baseline:    v1.10 canonical (Intake / AUTO-BLOCK ×4 / Coverage / Experience Injection) — restored
+office:      v1.11 Office Onboarding safety layer (4 modes, 5 gates) — active
+regression:  office_onboarding cases (6) — MANUAL_VERIFY
+audit:       Phase 0 → Phase 9 — complete chain
 ```
-
-- Office onboarding regression cases are `[MANUAL_VERIFY]`
-- Full audit chain: Phase 0 → Phase 9 (BLOCKED → fix → re-audit PASS)
-- CI passes: `python tests/harness_check/run_harness_check_cases.py`
