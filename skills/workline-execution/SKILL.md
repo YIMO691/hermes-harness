@@ -1,8 +1,8 @@
 ---
 name: workline-execution
 description: "Execute workline methodology on real projects — analysis, SDD, implementation, review, verification"
-version: 1.7.0
-tags: [workline, sdd, agent-pipeline, et6, unity, mode-router, conflict-gate]
+version: 1.11.0
+tags: [workline, sdd, agent-pipeline, et6, unity, mode-router, conflict-gate, office-onboarding, safe-note, office-lite, full-harness, personal-lab]
 platforms: [windows, linux, macos]
 triggers:
   - "开始工作线"
@@ -47,10 +47,91 @@ If a dependency skill is unavailable: mark `[FALLBACK]` and Hermes handles that 
 2. **Hermes schedules, Codex writes, Claude Code reviews.** Hermes does NOT write code. Delegate coding to Codex (via `delegate_task` or `codex exec`). Hermes' job: analyze, plan, verify compilation, coordinate agents.
 3. **Claude Code review is mandatory after every compilation pass.** Even 0-error builds. It catches pattern consistency, null safety, IsCan+Do completeness, and Handler coverage — things the compiler never will.
 4. **Git is the harness backbone.** Every coding session starts with `git init` (if not already a repo) and a feature branch. Every atomic change is committed. Claude Code reviews run on `git diff`, not full files. The `.bak` file pattern is a symptom of missing git — if you see `.bak` files, `git init` immediately.
+5. **Office safety first.** When working in a company context, compliance gates execute before any v1.10 pipeline phase. Unknown company policy → safe-note (no code access). See "## Office Onboarding (v1.11)" below.
+
+## Office Onboarding (v1.11)
+
+v1.11 adds a safety shell around the v1.10 pipeline for company onboarding scenarios. When a task involves a company project (not a personal-lab project), the following rules activate BEFORE the Mode Router.
+
+### Quick Reference
+
+**Default**: If the task mentions a company project and Company Policy is UNKNOWN → force `safe-note`.
+**Personal projects**: HotZoneTestC, DailyReward, ET6 source, hermes-harness, Learning → `personal-lab` (full v1.10 capability, no safety shell).
+
+Full mode/gate specs: `docs/OFFICE_ONBOARDING_MODES.md` and `docs/OFFICE_ONBOARDING_GATES.md`.
+Design rationale: `docs/OFFICE_ONBOARDING_WORKLINE_V1.11.md`.
+
+### Four Modes
+
+| Mode | Trigger | Policy Gate | Code Access | Mark |
+|:---|:---|:---:|:---:|:---|
+| **safe-note** | Company context + Policy UNKNOWN/DENIED | — | None | `[SAFE_NOTE]` |
+| **office-lite** | Policy = ALLOWED_NOTE | — | Read user-pasted snippets only | `[OFFICE_LITE]` |
+| **full-harness** | Policy = ALLOWED_AGENT + user authorizes scope | — | Authorized dirs only | `[FULL_HARNESS: <scope>]` |
+| **personal-lab** | Known personal projects (HotZoneTestC, DailyReward, ET6, har-harness, Learning) | — | Full v1.10 | `[PERSONAL_LAB]` |
+
+### Five Gates (execute in order)
+
+| # | Gate | What It Does |
+|:--|:---|:---|
+| 1 | **Company Policy Gate** | Route to safe-note/office-lite/full-harness based on user-declared policy state (UNKNOWN → safe-note). |
+| 2 | **Action Permission Gate** | Block actions above the current mode's allowed Level (L6: push/commit/daemon → always blocked). |
+| 3 | **Sensitive Data Gate** | Scan every output for source code/paths/class names/protocols/configs/secrets. Auto-redact or block. |
+| 4 | **Persistence Gate** | Block saving company-specific content to files/Obsidian/memory. Only abstract experience permitted. |
+| 5 | **Mode Switch Gate** | Three-line switching (work/learn/think) requires `clarify()` — never auto-switch. |
+
+### Key Rules (always active in company context)
+
+- 公司规范未确认时禁止扫描、读取、写入、调用 Codex 修改公司代码。
+- Codex 是"待授权执行者"（office-lite 下不自动调用，full-harness 下需显式授权目录范围）。
+- ChatGPT/外部模型只接收脱敏后的抽象问题和方案，不接收公司源码/文档/具体需求/Bug细节。
+- 三线切换（学习线/工作线/思考线）必须通过 `clarify()` 询问用户，绝不自动切换。
+- Level 6 动作（git commit/push、后台常驻）在任何模式下都禁止。
+
+### Mode Priority (for Mode Router)
+
+```text
+1. If project path is in personal-lab list → personal-lab (no safety shell, full v1.10)
+2. If task mentions "公司"/"项目" and not personal-lab → check Company Policy Gate
+3. If Company Policy = UNKNOWN → safe-note
+4. If Company Policy = ALLOWED_NOTE → office-lite
+5. If Company Policy = ALLOWED_AGENT + user authorized scope → full-harness
+```
+
+## Requirement Intake (v1.10)
+
+Before the Mode Router classifies a task, v1.10's Intake pipeline processes raw requirements into structured, actionable input. This is mandatory for full-mode tasks and recommended for complex quick-mode tasks.
+
+### Intake Pipeline (7 Documents)
+
+The Intake produces these 7 documents in order. Each feeds into the next:
+
+| # | Document | Purpose | Key Contents |
+|:--|:---|:---|:---|
+| 1 | **AmbiguityReport** | Identify what's unclear before proceeding | Ambiguous points × severity (BLOCKER/HIGH/MEDIUM/LOW), resolvable vs blocking |
+| 2 | **ModeRoutingDecision** | Decide quick vs full based on resolved scope | File count, line estimate, scope check, handoff target |
+| 3 | **TaskBreakdown** | Epic → Features → Tasks decomposition | Per-task: file, subtasks, mode, dependencies, dependency graph |
+| 4 | **AcceptanceCriteria** | Define "done" before coding starts | Functional / UI / State / Non-functional / Regression checklists |
+| 5 | **ClientImpactMap** | Map every affected area before touching code | Area (UI/Data/Config/Network/Resource/Perf/Lifecycle/Platform/QA) × Impact × Action × Risk |
+| 6 | **ImplementationBrief** | One-page executable summary for handoff | Goal, confirmed requirements, proposed changes, recommended mode |
+| 7 | **RequirementDigest** | Complete structured digest for future reference | Source, player behavior, core rules, user/state/data flows, out-of-scope, assumptions, open questions |
+
+### When Intake Is Required
+
+- **full mode**: Mandatory. All 7 documents must be produced before Phase 2 (ANALYSIS).
+- **quick mode**: Recommended. Minimum: AmbiguityReport + AcceptanceCriteria.
+- **office-lite mode**: Use `templates/office_onboarding/requirement_intake_lite.md` instead (lighter, no code access).
+
+### Intake vs Analysis
+
+- **Intake** answers "what does the user want?" — processes raw requirements into structured understanding.
+- **Phase 2 (ANALYSIS)** answers "how does the codebase work?" — reads existing code to map the implementation landscape.
+- Intake runs before Mode Router; Analysis runs after Mode Router inside Core Pipeline.
 
 ## Mode Router
 
-v1.7 introduces task-mode routing. Not all tasks need the full pipeline. Before entering the Core Pipeline, classify the task into one of two modes.
+v1.7 introduces task-mode routing. Not all tasks need the full pipeline. Before entering the Core Pipeline, classify the task.
+v1.11 extends Mode Router with Office Onboarding modes (see above). For company-context tasks, the office mode is resolved first; for personal-lab tasks, the original full/quick router applies.
 
 ### Mode Decision (Agent Internal — do NOT ask user to pick a mode)
 
@@ -138,10 +219,11 @@ Agent 可用性:
 
 项目状态:
   - git status 确认工作区（如果是 git repo）
-  - 如果存在 .bak 文件 → git init 立即执行
+  - **AUTO-BLOCK: .bak 文件检测** — 执行 `find . -name '*.bak' -o -name '*.bak2' | head -20`。如果发现 .bak 文件 → 说明前序工作无版本控制。强制要求 `git init && git add -A && git commit -m "initial: project baseline"` 后再继续。不跳过此步。来源：ET6框架项目 ≥2次 .bak 残留。
+  - git log --oneline -3 确认最近的提交状态
 ```
 
-Output: `tasks/doing/ENV_CHECK.md` with each item marked ✅ or ❌.
+Output: `tasks/doing/ENV_CHECK.md`
 
 **Items marked ❌ = blocking.** Do not proceed to Phase 1 until resolved or explicitly waived by the user.
 
@@ -154,6 +236,26 @@ Read EVERY document provided. Do not skip. This includes:
 - File structure docs
 - Reference module requirement docs (both client and server)
 - Reference module source code (all layers: Model, Hotfix, View)
+
+#### 1.0 学习产出应用清单 (AUTO-BLOCK — Phase 1 末尾)
+
+**Rule source**: 所有三个项目（HotZoneTestC + ET6源码学习 + ET6框架项目）。学了新知识后没有立即应用到当前任务的评估/审查框架中，导致审计用旧标准、代码不遵守新规范。重复≥3次 → 升级为强制检查。
+
+**Phase 1 完成后，必须产出以下清单才能进入 Phase 2**：
+
+```markdown
+## 学习产出应用清单
+
+| # | 学到的内容 | 来源 | 将应用于当前任务的哪个Phase |
+|:--|:---|:---|:---|
+| 1 | <新规范/新模式/新陷阱> | <文档/参考模块> | <Phase N — 具体如何用> |
+```
+
+**如果清单为空**（"本次没有新学到的内容"）：标记 `[OK]` 并继续。
+
+**如果清单非空**：每一条必须列明"将应用于哪个Phase的哪一步"。不写"下次再用"——不允许延后应用。
+
+**Evidence**: 此清单附在 `tasks/doing/PROJECT-ANALYSIS.md` 末尾。
 
 ### Phase 2: ANALYSIS
 
@@ -522,7 +624,106 @@ delegate_task(
 
 If Claude Code returns issues, fix them and re-review before proceeding to Phase 8.
 
+#### Naming Standard Check (Phase 7 — AUTO-BLOCK for ET6/named-standard projects)
+
+**Rule source**: HotZoneTestC 经验 (p_前缀违规→全项目重命名18文件) + ET6框架项目 (命名规范是面试一票否决项)。重复≥2次 → 从 pitfall 升级为自动阻断规则。
+
+If the project follows ET6 naming conventions (detected via presence of `代码书写规范.docx` or `hungarian-naming-standard.md` in Phase 0/1), execute this check **before** proceeding to the general code review checklist. This is a BLOCKING check — if it fails, the review verdict is automatically NEEDS_FIX, regardless of all other checks.
+
+**Auto-check script** (run in terminal, verify zero output):
+
+```bash
+# Check 1: 值类型参数不得有p_前缀 (p_nXxx, p_szXxx, p_bXxx, p_fXxx)
+grep -rn 'p_n[A-Z]\|p_sz[A-Z]\|p_b[A-Z]\|p_f[A-Z]' <target_dir> --include='*.cs' | grep -v '\.meta'
+
+# Check 2: 引用类型参数不得有p_下划线 (p_Xxx错误，应为pXxx)
+grep -rn 'p_[A-Z]' <target_dir> --include='*.cs' | grep -v '\.meta'
+
+# Check 3: 字段缺少m_前缀 (仅检查非Unity序列化字段)
+grep -rn 'private [a-z]' <target_dir> --include='*.cs' | grep -v 'm_\|\.meta\|readonly\|const\|static'
+```
+
+**Blocking rules**:
+
+| Check | Pattern | If match found | Evidence required |
+|:---|:---|:---|:---|
+| 值类型参数p_前缀 | `p_nXxx`, `p_szXxx`, `p_bXxx` | ❌ BLOCK — NEEDS_FIX | grep output with file:line |
+| 引用类型参数下划线 | `p_Xxx` (应为`pXxx`) | ❌ BLOCK — NEEDS_FIX | grep output with file:line |
+| 字段m_前缀缺失 | `private` 非 `m_` 非 static | ⚠️ WARN — 人工确认是否为Unity序列化字段 | grep output with file:line |
+
+**If blocked**: Record in REVIEW.md with severity=Blocker. Return NEEDS_FIX. Do not proceed to Phase 8 until all three checks produce zero matches.
+
+**Evidence format** in REVIEW.md:
+```markdown
+## 命名合规检查 (AUTO-BLOCK)
+
+| Check | Result | Evidence |
+|:---|---|:---|
+| p_n/p_sz/p_b 残留 | ✅ 0 matches | grep output empty |
+| p_下划线残留 | ✅ 0 matches | grep output empty |
+| m_前缀缺失 | ✅ 0 matches | — |
+```
+
+See `references/hungarian-naming-standard.md` for the full ET6 naming standard.
+
+### Phase 7.5: Coverage Gate (CONDITIONAL — full mode + business logic)
+
+**Fracture point**: 2026-06-24 HotZoneTestC — white-box tests were written retroactively after the audit, not during development. The 71→98 assertion gap was discovered only because the user asked about "白盒全覆盖".
+
+**Trigger**: task type = `full` mode AND task modifies or creates methods in Logic layer (InventoryManager, CraftingManager, SaveData, etc.). Does NOT trigger on: `quick` mode, Editor scripts, UI adjustments, config-only changes.
+
+**Check**:
+1. Does `Assets/Scripts/Editor/` contain a test file (`*Test*.cs`)?
+2. Does the test cover every public method modified or created in the task?
+3. Does the test output confirm all assertions PASSED?
+
+If any check fails → mark `[BLOCK: missing white-box test]`. Do not proceed to Phase 8. Generate `tasks/review/白盒覆盖矩阵.md`.
+
+**如果三个检查全部通过**: 生成 `tasks/review/白盒覆盖矩阵.md`。
+
+**Unity Editor 测试常见陷阱**: 参见 `references/unity-editor-test-pitfalls.md`——单例自毁、SQLite 残留数据、硬编码断言值、DLL 缓存、DisplayDialog 阻塞、write_file 破坏。
+
+**Why**: Google CR Standard §Tests: "Tests should be added in the same CL as the production code." The workline's fracture-only principle means we add this gate because it actually broke — not because we "think it might help."
+
+See `references/white-box-test-pattern.md` for Unity Editor 白盒测试的四个致命陷阱和覆盖矩阵模板。
+
 ### Phase 8: Verification
+
+#### 8.0 审计目标版本确认 (AUTO-BLOCK — Phase 8 前置)
+
+**Rule source**: HotZoneTestC 经验。3次审计审了旧版本：第一次评分口径错误（只读功能需求.docx），第一次代码审计审了 origin/main 旧代码（误报3个已修复问题），复审时再次审错版本。重复3次 → 升级为自动阻断。
+
+**Before any audit/verification/review action, execute**:
+
+```bash
+# 确认本地 vs 远端的差异
+git status -s
+git log origin/main..HEAD --oneline
+
+# 如果有未推送修改 → 审计本地磁盘文件，不是远端
+# 如果工作区干净 → 确认审计目标（用户要审哪个版本？）
+```
+
+**Blocking rules**:
+
+| Check | If | Action |
+|:---|:---|:---|
+| `git status -s` 非空 | 有未提交修改 | 审计前先问用户："本地有未提交修改，审本地工作区还是远端？" |
+| `git log origin/main..HEAD` 非空 | 有未推送commit | 审计前先问用户："本地有 N 个未推送 commit，审本地还是远端？" |
+| 用户明确说"审一下能不能提交" | 提交前审计 | 审本地磁盘文件（`read_file(path)`），不用 `git show origin/main:` |
+
+**Evidence format** in verification report:
+```markdown
+## 审计版本确认
+
+| Check | Result |
+|:---|---|
+| git status -s | 干净 / 有N个未提交文件 |
+| git log origin/main..HEAD | 0 / N commits ahead |
+| 审计目标 | 本地工作区 / origin/main |
+```
+
+**If blocked**: 不输出任何审计结论。先确认版本再开口。
 
 User does Unity Play + screenshots. Hermes handles file deployment, compilation, and review.
 
@@ -547,6 +748,21 @@ After verification, produce an Obsidian retrospective note. Include:
 - 可以加入 SDD 模板的内容：
 - 可以作为面试案例讲述的点：
 ```
+
+### 8c. 经验资产注入（每次任务完成后强制执行）
+
+**来源**: 2026-06-28 复盘 — HotZoneTestC + ET6源码学习 + ET6框架项目的经验尚未系统性注入Harness。
+
+任务完成后，检查以下四条通道是否有可注入的资产。详见 `references/experience-injection-framework.md`：
+
+| 通道 | 检查 | 目标 |
+|:---|:---|:---|
+| Rule | 本次是否有 ≥2 次重复出现的错误？ | 升级为 Phase 内自动阻断 |
+| Metric | 本次是否产生了可对比的量化数据？ | 建立/更新基线 |
+| Template | 本次的产出物是否可复用为格式模板？ | 提取为强制模板 |
+| Capability | 本次是否证明了某个domain的能力？ | 更新 `references/harness-capability-matrix.md` |
+
+**强制输出**: 每次正式任务（full/quick模式）完成后，在 metrics.yaml 的 `harness_injection` 段下填写四个通道的 y/n 和新资产路径。未产生新资产也标注 `none`——不能留空。
 
 ### 8b. 产出结构化 metrics
 
