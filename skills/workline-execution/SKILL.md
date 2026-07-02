@@ -98,6 +98,36 @@ Design rationale: `docs/OFFICE_ONBOARDING_WORKLINE_V1.11.md`.
 5. If Company Policy = ALLOWED_AGENT + user authorized scope → full-harness
 ```
 
+## Requirement Intake (v1.10)
+
+Before the Mode Router classifies a task, v1.10's Intake pipeline processes raw requirements into structured, actionable input. This is mandatory for full-mode tasks and recommended for complex quick-mode tasks.
+
+### Intake Pipeline (7 Documents)
+
+The Intake produces these 7 documents in order. Each feeds into the next:
+
+| # | Document | Purpose | Key Contents |
+|:--|:---|:---|:---|
+| 1 | **AmbiguityReport** | Identify what's unclear before proceeding | Ambiguous points × severity (BLOCKER/HIGH/MEDIUM/LOW), resolvable vs blocking |
+| 2 | **ModeRoutingDecision** | Decide quick vs full based on resolved scope | File count, line estimate, scope check, handoff target |
+| 3 | **TaskBreakdown** | Epic → Features → Tasks decomposition | Per-task: file, subtasks, mode, dependencies, dependency graph |
+| 4 | **AcceptanceCriteria** | Define "done" before coding starts | Functional / UI / State / Non-functional / Regression checklists |
+| 5 | **ClientImpactMap** | Map every affected area before touching code | Area (UI/Data/Config/Network/Resource/Perf/Lifecycle/Platform/QA) × Impact × Action × Risk |
+| 6 | **ImplementationBrief** | One-page executable summary for handoff | Goal, confirmed requirements, proposed changes, recommended mode |
+| 7 | **RequirementDigest** | Complete structured digest for future reference | Source, player behavior, core rules, user/state/data flows, out-of-scope, assumptions, open questions |
+
+### When Intake Is Required
+
+- **full mode**: Mandatory. All 7 documents must be produced before Phase 2 (ANALYSIS).
+- **quick mode**: Recommended. Minimum: AmbiguityReport + AcceptanceCriteria.
+- **office-lite mode**: Use `templates/office_onboarding/requirement_intake_lite.md` instead (lighter, no code access).
+
+### Intake vs Analysis
+
+- **Intake** answers "what does the user want?" — processes raw requirements into structured understanding.
+- **Phase 2 (ANALYSIS)** answers "how does the codebase work?" — reads existing code to map the implementation landscape.
+- Intake runs before Mode Router; Analysis runs after Mode Router inside Core Pipeline.
+
 ## Mode Router
 
 v1.7 introduces task-mode routing. Not all tasks need the full pipeline. Before entering the Core Pipeline, classify the task.
