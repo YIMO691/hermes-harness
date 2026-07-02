@@ -4,8 +4,8 @@
 
 ![Version](https://img.shields.io/badge/version-v1.11--office--onboarding--stable-blue)
 ![Status](https://img.shields.io/badge/status-Stable%20Personal%20Harness-green)
-![CI](https://img.shields.io/badge/CI-passing-brightgreen)
-
+[![CI](https://github.com/YIMO691/hermes-harness/actions/workflows/workline-check.yml/badge.svg)](https://github.com/YIMO691/hermes-harness/actions/workflows/workline-check.yml)
+![Scope](https://img.shields.io/badge/scope-no%20LangGraph%20%7C%20no%20Dashboard-lightgrey)
 ---
 
 ## Current Stable Version
@@ -59,7 +59,7 @@ flowchart TD
 | **safe-note** | Company policy unknown | Sanitized notes, question templates, daily reports |
 | **office-lite** | Company allows personal notes | + Requirement breakdown, impact analysis (no code access) |
 | **full-harness** | Company + user authorized | Full v1.10 pipeline (authorized directories only) |
-| **personal-lab** | Personal projects | Full v1.10 pipeline (no safety limits) |
+| **personal-lab** | Personal projects | Full v1.10 pipeline; no Office safety shell, but repository security rules still apply |
 
 ## Gates
 
@@ -67,7 +67,7 @@ flowchart TD
 |:---|:---|
 | **Company Policy Gate** | Unknown policy → `safe-note` by default |
 | **Sensitive Data Gate** | Auto-redact source code/paths/class names before output |
-| **Action Permission Gate** | 6-level action control — L6 (commit/push) always blocked |
+| **Action Permission Gate** | 6-level action control; unattended commit/push blocked — user-confirmed Git operations use the normal release workflow |
 | **Persistence Gate** | Block saving company data to files, Obsidian, or memory |
 | **Mode Switch Gate** | Work / Learn / Think line switching requires manual confirmation |
 

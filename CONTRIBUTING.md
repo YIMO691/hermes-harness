@@ -34,7 +34,10 @@ flowchart LR
 **GAP #4 教训**：v1.8/v1.9/v1.10 曾出现 runtime skill 更新但 repo 停留 v1.7 的问题。以后任何 skill 规则升级，repo 和 runtime 必须同步。
 
 同步命令：
+
 ```bash
+# Do not run blindly. Check repo diff, confirm runtime target path,
+# back up runtime skill if needed, then re-run compatibility audit.
 cp -r skills/<name> ~/AppData/Local/hermes/skills/<name>/
 ```
 

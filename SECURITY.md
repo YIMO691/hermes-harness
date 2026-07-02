@@ -74,7 +74,7 @@ Codex is an authorized-only executor.
 - 公司规范未确认 → 不调用 Codex 处理公司代码
 - 公司规范 = ALLOWED_NOTE → 不调用 Codex
 - 公司规范 = ALLOWED_AGENT + 用户显式授权 → 允许在授权范围内执行
-- personal-lab → 无限制
+- personal-lab → allowed for personal projects only; repository security rules and secret rules still apply
 
 ### ChatGPT / External LLMs
 
@@ -94,7 +94,11 @@ Codex is an authorized-only executor.
 
 ## Git Guardrails
 
-禁止 `git push --force` / `git reset --hard` / `git clean -fd`。
+Destructive Git commands are forbidden by default and require explicit user confirmation:
+
+- `git push --force`
+- `git reset --hard`
+- `git clean -fd`
 
 ---
 
