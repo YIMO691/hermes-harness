@@ -1,134 +1,121 @@
-# Hermes Harness Workline
+# Hermes Harness — Personal SDD-Harness Workline
 
-> A personal AI Agent engineering harness for structured task execution, validation, review, evidence tracking, and governance.
+> A personal AI Agent engineering harness for structured task execution, safe office onboarding, and evidence-driven governance.
 
-![Version](https://img.shields.io/badge/version-v1.9--stable-blue)
-![Status](https://img.shields.io/badge/status-Strong%20Personal%20Harness-green)
+![Version](https://img.shields.io/badge/version-v1.11--office--onboarding--stable-blue)
+![Status](https://img.shields.io/badge/status-Stable%20Personal%20Harness-green)
 ![CI](https://img.shields.io/badge/CI-passing-brightgreen)
 ![Scope](https://img.shields.io/badge/scope-no%20LangGraph%20%7C%20no%20Dashboard-lightgrey)
 
 ---
 
-## 当前版本
+## Current Stable Version
 
 ```
-v1.7-stable → Workline Core (Mode Router + Conflict Gate)
-v1.8-stable → Harness Checker (full/quick compliance)
-v1.9-stable → CI + Regression 10/10 + Git Workflow Evidence
-v1.10 trial  → Requirement Intake (intake → breakdown → handoff)
+v1.11-office-onboarding-stable
 ```
 
-**当前真实等级**：Strong Personal Harness Prototype（接近 Stable Personal Harness，尚未 Production-grade）。
+## What This Is
 
----
+这是一个个人 Agent Engineering / SDD-Harness 工作线仓库。它不是一个公司工具，不是自动化开发替代品，而是一套**帮助你安全、结构化地执行开发任务的个人管线**。
 
-## 核心能力
+v1.10 形成了 canonical baseline（Intake / AUTO-BLOCK / Coverage / Experience Injection）。v1.11 在 v1.10 外面增加 **Office Onboarding 安全壳**，解决公司入职场景下"规范未知、权限未知、信息安全未知"的问题。
 
-| 能力 | 状态 |
-|:---|:--:|
-| full / quick Mode Router | ✅ |
-| Conflict Gate（唯一 active gate） | ✅ |
-| v1.8 Harness Checker | ✅ |
-| CI checker（GitHub Actions） | ✅ |
-| Regression 10/10 | ✅ |
-| Git Workflow 执行证据 | ✅ |
-| 治理裁决 | ✅ |
-| v1.10 Requirement Intake | ✅ trial (intake → quick implementation verified) |
-| LangGraph / LangChain | ❌ 未引入 |
-| Dashboard / 平台化 | ❌ 不做 |
+## Why v1.11
 
----
+| 场景 | v1.10 | v1.11 |
+|:---|:---|:---|
+| 个人测试题（HotZoneTestC） | ✅ 完整管线 | ✅ 与 v1.10 兼容 |
+| 公司入职第一周 | ❌ 假设已知规范/可写入 | ✅ safe-note：脱敏笔记 + 提问 |
+| 公司允许个人笔记 | ❌ 无中间模式 | ✅ office-lite：需求拆解，不触代码 |
+| 公司明确允许 Agent | — | ✅ full-harness：限定范围，需授权 |
 
-## 仓库结构
+## Architecture
 
 ```
-.github/workflows/   CI — 自动运行 checker
-docs/                architecture / plans / evaluations / governance
-skills/              runtime skills
-tools/               executable tools (checker)
-tests/               executable fixtures
-regression/          regression specs
-tasks/               real task evidence
-retrospectives/      retrospectives and metrics
-scripts/             auxiliary scripts
-snippets/            reusable snippets
+┌──────────────────────────────────────┐
+│  v1.11 Office Onboarding Safety Layer │  ← 新（4 modes + 5 gates）
+│  ┌────────────────────────────────┐  │
+│  │  v1.10 Canonical Baseline      │  │  ← 已完整回填
+│  │  Intake / AUTO-BLOCK / Coverage │  │
+│  │  / Experience Injection / Core  │  │
+│  └────────────────────────────────┘  │
+└──────────────────────────────────────┘
 ```
 
-→ 详细规则：`docs/WORKLINE_REPOSITORY_STRUCTURE.md`
+## Modes
 
----
+| Mode | Trigger | What You Can Do |
+|:---|:---|:---|
+| **safe-note** | Company policy unknown | 脱敏笔记、提问话术、日报模板 |
+| **office-lite** | Company allows personal notes | + 需求拆解、影响面、验收标准（不触代码） |
+| **full-harness** | Company + user authorized | 完整 v1.10 管线（限定目录范围） |
+| **personal-lab** | Personal projects | 完整 v1.10 管线（无安全限制） |
 
-## 快速开始
+## Gates
 
-```bash
-# 安装依赖
-pip install -r requirements-dev.txt
-
-# 运行 checker
-python tests/harness_check/run_harness_check_cases.py
-
-# CI 自动触发：push / PR / workflow_dispatch
-# 配置：.github/workflows/workline-check.yml
-```
-
----
-
-## 使用流程
-
-```
-Task / Bug
-  → Mode Router（full / quick）
-    → Conflict Gate（仅 full）
-      → Agent 执行（Hermes / Codex / Claude Code）
-        → Build / Review / Verify
-          → Metrics / Retro
-            → Git Evidence
-```
-
----
-
-## 文档索引
-
-| 文档 | 用途 |
+| Gate | Purpose |
 |:---|:---|
-| `docs/WORKLINE_REPOSITORY_STRUCTURE.md` | 仓库结构治理规则 |
-| `docs/WORKLINE_ARCHITECTURE_V1.7_STABLE.md` | 稳定架构定义 |
-| `docs/WORKLINE_GIT_WORKFLOW.md` | Git 工作流 |
-| `docs/V1.8_HARNESS_CHECK_MINIMAL_PLAN.md` | v1.8 checker 方案 |
-| `docs/V1.9_CI_REGRESSION_EVIDENCE_PLAN.md` | v1.9 计划 |
-| `docs/UNITY_CLIENT_LIFECYCLE_COVERAGE.md` | 游戏客户端覆盖地图 |
-| `docs/WORKLINE_FULL_ENGINEERING_EVALUATION.md` | 全量工程评估 |
-| `docs/evaluations/v1.8-stable/WORKLINE_GOVERNANCE_VERDICT.md` | v1.8 治理裁决 |
-| `docs/evaluations/v1.9-ci-regression-evidence/V1.9_EVIDENCE_REPORT.md` | v1.9 证据报告 |
-| `docs/evaluations/v1.10-requirement-intake/V1.10_REQUIREMENT_INTAKE_READINESS_REVIEW.md` | v1.10 intake 就绪评估 |
-| `tasks/v1.10/` | v1.10 intake 试跑 + quick 实现证据 |
-| `regression/README.md` | 回归套件（10 cases） |
-| `skills/workline-execution/SKILL.md` | 运行时 skill |
+| **Company Policy Gate** | Unknown policy → safe-note by default |
+| **Sensitive Data Gate** | Auto-redact source code/paths/class names before output |
+| **Action Permission Gate** | 6-level action control — L6 (commit/push) always blocked |
+| **Persistence Gate** | Block saving company-specific data to files/Obsidian/memory |
+| **Mode Switch Gate** | Work/Learn/Think line switching requires manual confirmation |
 
----
+## Quick Start
 
-## 路线图
+### Personal Lab
+
+For ET6 source, HotZoneTestC, DailyReward, personal demos. Full v1.10 capability.
+
+### Office Onboarding
+
+For your first week at a company. Start here:
+
+→ `docs/OFFICE_ONBOARDING_FIRST_WEEK_SOP.md`
+
+### Daily Usage
+
+For everyday lightweight use:
+
+→ `docs/OFFICE_ONBOARDING_DAILY_USAGE_GUIDE.md`
+
+## Key Documents
+
+| Document | Purpose |
+|:---|:---|
+| `docs/INDEX.md` | Full documentation index |
+| `docs/OFFICE_ONBOARDING_WORKLINE_V1.11.md` | v1.11 design rationale |
+| `docs/OFFICE_ONBOARDING_FIRST_WEEK_SOP.md` | Day 1–5 onboarding roadmap |
+| `docs/OFFICE_ONBOARDING_DAILY_USAGE_GUIDE.md` | Daily template guide |
+| `docs/OBSIDIAN_WORK_VAULT_SAFE_STRUCTURE.md` | Obsidian vault safety rules |
+| `reports/v1.11/v1.11_office_onboarding_release_notes.md` | Release notes |
+| `skills/workline-execution/SKILL.md` | Runtime skill (v1.11.0) |
+
+## Safety Notice
+
+**When company policy is unknown or not confirmed:**
+
+- ❌ Do not scan company project directories
+- ❌ Do not read company source code
+- ❌ Do not invoke Codex to modify company code
+- ❌ Do not send company details to ChatGPT
+- ❌ Do not save company-specific information
+
+**Default mode in company context: safe-note.**
+
+## Repository Status
 
 ```
-v1.7-stable — Workline Core                ✅
-v1.8-stable — Harness Checker               ✅
-v1.9-stable — CI + Regression + Git Evidence ✅
-v1.10        — Requirement Intake trial ✅ (intake → quick verified)
-v1.10-stable — Requirement Intake + evidence report (pending)
-v2.0  — 真实断裂后激活第一个 future Gate
+v1.11-office-onboarding-stable — 4 modes, 5 gates, 6 templates, 6 regression cases
+              ↓
+v1.10 canonical baseline — Intake / AUTO-BLOCK ×4 / Coverage / Experience Injection
+              ↓
+v1.9-stable — CI + Regression 10/10
+v1.8-stable — Harness Checker
+v1.7-stable — Workline Core (Mode Router + Conflict Gate)
 ```
 
----
-
-## 当前不做
-
-- Production-grade Harness
-- LangGraph / LangChain
-- Dashboard / 平台化
-- 新 active Gate
-- token observability 实现
-- 完整 Unity 客户端生命周期自动化
-
----
-
-*最后更新：2026-06-22 · v1.9-stable (v1.10 trial)*
+- Office onboarding regression cases are `[MANUAL_VERIFY]`
+- Full audit chain: Phase 0 → Phase 9 (BLOCKED → fix → re-audit PASS)
+- CI passes: `python tests/harness_check/run_harness_check_cases.py`
