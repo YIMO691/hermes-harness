@@ -1,3 +1,5 @@
+> **状态：已归档（2026-10-20）**。这是早期的 Agent 工作线，后续工作见 [aeh](https://github.com/YIMO691/aeh)。
+
 # Hermes Harness Workline
 
 > Personal Agent Engineering Workline with Safe Office Onboarding.
